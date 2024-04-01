@@ -12,20 +12,20 @@
             	<CommandName>Change_Administrator_Account_Name</CommandName>
             	<CommandType>Powershell</CommandType>
             	<CommandString>
-		$TokenSet = @{
-			U = [Char[]]'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-			L = [Char[]]'abcdefghijklmnopqrstuvwxyz'
-			N = [Char[]]'0123456789'
-		}
+			$TokenSet = @{
+				U = [Char[]]'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+				L = [Char[]]'abcdefghijklmnopqrstuvwxyz'
+				N = [Char[]]'0123456789'
+			}
 
-		$Upper = Get-Random -Count 5 -InputObject $TokenSet.U
-		$Lower = Get-Random -Count 5 -InputObject $TokenSet.L
-		$Number = Get-Random -Count 5 -InputObject $TokenSet.N
+			$Upper = Get-Random -Count 5 -InputObject $TokenSet.U
+			$Lower = Get-Random -Count 5 -InputObject $TokenSet.L
+			$Number = Get-Random -Count 5 -InputObject $TokenSet.N
 
-		$StringSet = $Upper + $Lower + $Number
+			$StringSet = $Upper + $Lower + $Number
 
-		$pwd = -join (Get-Random -Count 8 -InputObject $StringSet)
-		Start-Process PowerShell "-Command `"Rename-LocalUser -Name Administrator -NewName $pwd`"" -Verb RunAs
+			$pwd = -join (Get-Random -Count 8 -InputObject $StringSet)
+			Start-Process PowerShell "-Command `"Rename-LocalUser -Name Administrator -NewName $pwd`"" -Verb RunAs
 		</CommandString>
         </Command>
     </Commands>
