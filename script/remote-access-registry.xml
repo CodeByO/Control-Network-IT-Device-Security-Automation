@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<Plugin name="Windows_Security_Plugin">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>remote-access-registry.xml</PluginName>
+    <TargetOS>Windows</TargetOS>
+    <Result_Type>action</Result_Type>
+    <Info>원격으로 액세스 할 수 있는 레지스트리 경로</Info>
+    <Description>원격 레지스트리 서비스를 비활성화 하여 레지스트리에 대한 원격 접근을
+차단하기 위함</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Remote_Access_Registry_Disable</CommandName>
+            <CommandType>Powershell</CommandType>
+            <CommandString>Set-Service -Name "RemoteRegistry" -StartupType Disabled; Stop-Service -Name "RemoteRegistry"</CommandString>
+        </Command>
+    </Commands>
+</Plugin>

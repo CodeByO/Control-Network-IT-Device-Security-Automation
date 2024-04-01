@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<Plugin name="Windows_Security_Plugin">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>remote-event-log-access-block.xml</PluginName>
+    <TargetOS>Windows</TargetOS>
+    <Result_Type>action</Result_Type>
+    <Info>원격에서 이벤트 로그파일 접근 차단</Info>
+    <Description>원격에서 로그 파일을 접근하는 것을 차단하여 로그 파일의 훼손 및 변조를
+차단하기 위함</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Remote_Event_Log_Access_Block</CommandName>
+            <CommandType>Powershell</CommandType>
+            <CommandString>(Get-Acl "%systemroot%\system32\config").Access | Where-Object { $_.IdentityReference -eq 'Everyone' } | ForEach-Object { $acl = Get-Acl "%systemroot%\system32\config"; $acl.RemoveAccessRule($_); Set-Acl -Path "%systemroot%\system32\config" -AclObject $acl }</CommandString>
+            <CommandString>(Get-Acl "%systemroot%\system32\LogFilesnfig").Access | Where-Object { $_.IdentityReference -eq 'Everyone' } | ForEach-Object { $acl = Get-Acl "%systemroot%\system32\LogFiles"; $acl.RemoveAccessRule($_); Set-Acl -Path "%systemroot%\system32\LogFiles" -AclObject $acl }</CommandString>
+        </Command>
+    </Commands>
+</Plugin>
