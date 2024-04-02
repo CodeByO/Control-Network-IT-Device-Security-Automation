@@ -11,7 +11,7 @@
 [DOING]
 
     특정 IP, Port 대상으로 SSH, Telnet, Serial 통신 연결 하는 코드 구현
-        -> 김연수님 작업 중
+        -> 김연수님 작업 중 (4월 7일까지)
     
 [DONE]
 
