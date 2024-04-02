@@ -5,6 +5,7 @@
 import os
 import sys
 import signal
+import subprocess
 from pathlib import Path
 
 import telnetlib
@@ -12,6 +13,8 @@ import netmiko
 import serial
 
 import xml.etree.ElementTree as ET
+
+import sqlite3
 
 '''
 from netmiko import ConnectHandler
@@ -133,8 +136,24 @@ def InspectionAutomation():
     
     :return: DB에 올리기 위한 점검 결과 자료구조
     '''
-    pass
-
+    # Windows 보안 취약점 점검시 파워쉘 코드 실행 법
+    process = subprocess.Popen([sys.executable, '-u', attack_path] + arguments.split(' '), stdout=subprocess.PIPE, text=True)
+    while process.poll() == None:
+        line = process.stdout.readline().strip()
+        if line:
+            print(line)
+            
+    # UI에서 점검 실행 시 아래 코드 사용
+    # process_info = Thread(target=InspectionAutomation, args=(arguments,))
+    # process_info.start()
+    
+    # SQLite 사용 방법
+    con = sqlite3.connect("")
+    cursor = con.cursor()
+    insert_data = f"INSERT INTO table VALUES({},{},{})"
+    cursor.execute(insert_data)
+    con.commit()
+    con.close()
 if __name__ == '__main__':
     # 특정 signal 입력 시 수행하는 동작 정의
     def SignalHandler(sig, frame):
