@@ -76,7 +76,43 @@ ser.isOpen()
 print(ser.name)
 
 '''
+''' samba
+from smbprotocol.connection import Connection, Dialects
+from smbprotocol.session import Session
+from smbprotocol.tree import TreeConnect
+from smbprotocol.file import (
+    CreateDisposition, FileAttributes, FilePipePrinterAccessMask, Open, ShareAccess
+)
 
+# 서버 및 로그인 정보 설정
+hostname = "your_samba_server"  # Samba 서버 호스트네임 또는 IP 주소
+username = "your_username"  # 사용자 이름
+password = "your_password"  # 비밀번호
+share_name = "your_share_name"  # 공유 이름
+file_path = "\\path\\to\\your\\file.txt"  # 읽고자 하는 파일의 경로
+
+# Samba 서버에 연결
+connection = Connection(uuid.uuid4(), hostname, 445)
+connection.connect()
+session = Session(connection, username, password)
+session.connect()
+# 공유에 연결
+tree = TreeConnect(session, "\\\\" + hostname + "\\" + share_name)
+tree.connect()
+
+# 공유의 루트 디렉토리 열기
+file = Open(tree, file_path, desired_access=FilePipePrinterAccessMask.GENERIC_READ, share_access=ShareAccess.FILE_SHARE_READ,
+            create_disposition=CreateDisposition.FILE_OPEN, file_attributes=FileAttributes.FILE_ATTRIBUTE_NORMAL)
+file.open()
+file_contents = file.read(0, 1024)  # 첫 1024 바이트 읽기
+print(file_contents.decode())  # 내용 출력
+file.close()
+
+# 세션 및 연결 종료
+tree.disconnect()
+session.logoff()
+connection.disconnect()
+'''
 # [Func] ConnectTarget
 # [DESC] 보안 취약점 점검 대상 PC에 접속
 # [TODO] 각 인자에 맞게 코드 구현
