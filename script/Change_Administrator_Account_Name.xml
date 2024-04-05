@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Plugin name="Windows_Security_Plugin">
+<Plugin name="Change_Administrator_Account_Name">
     <PluginVersion>1</PluginVersion>
     <PluginName>Change_Administrator_Account_Name.xml</PluginName>
     <TargetOS>Windows</TargetOS>

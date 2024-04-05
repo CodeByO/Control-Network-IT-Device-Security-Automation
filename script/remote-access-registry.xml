@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Plugin name="Windows_Security_Plugin">
+<Plugin name="Remote_Access_Registry">
     <PluginVersion>1</PluginVersion>
     <PluginName>remote-access-registry.xml</PluginName>
     <TargetOS>Windows</TargetOS>

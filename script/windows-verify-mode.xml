@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Plugin name="Windows_Security_Plugin">
+<Plugin name="Windows_Verify_mode">
     <PluginVersion>1</PluginVersion>
     <PluginName>windows-verify-mode.xml</PluginName>
     <TargetOS>Windows</TargetOS>

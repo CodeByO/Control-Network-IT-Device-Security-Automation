@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Plugin name="Windows_Security_Plugin">
+<Plugin name="Change_Account_Lockout_Threshold">
     <PluginVersion>1</PluginVersion>
     <PluginName>Change_Account_Lockout_Threshold.xml</PluginName>
     <TargetOS>Windows</TargetOS>
