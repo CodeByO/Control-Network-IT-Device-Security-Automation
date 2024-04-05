@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Plugin name="Windows_Security_Plugin">
+<Plugin name="Anti_Virus_Update">
     <PluginVersion>1</PluginVersion>
     <PluginName>anti-virus-update.xml</PluginName>
     <TargetOS>Windows</TargetOS>
