@@ -5,11 +5,12 @@
 ```
 [TODO]
 
-    DB 설계
+    입력 화면, 규제 지침 조회 화면 구현
+    SW상세설계서 일부 작성
 
 [DOING]
 
-    DB 설계 회의
+    
 
 [DONE]
 
@@ -19,7 +20,8 @@
         -> UI : Python(PyQT)
         -> DB : SQLite
 
-    UI 화면 설계 초안
+    UI 화면 설계 완료
+    DB 설계 완료
 
 [ISSUE]
 
