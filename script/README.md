@@ -22,4 +22,16 @@
 [ISSUE]
 
    없습니다.
+
+[tag]
+
+    Result_Type - action, info, registry
+    CommandType - Powershell, cmd, terminal
+    PluginVersion - 1
+    PluginName - 플러그인 이름
+    TargetOS - Windows, Linux
+    CommandCount - 명령어의 개수 지정
+    CommandString - 명령어
+    Info - 해당 플러그인 간단 설명
+    Description - 해당 플러그인 세부 사항
 ```

@@ -1,0 +1,19 @@
+Jeongmin Choi
+
+1) Change_Administrator_Account_Name.xml
+- 계정 관리의 규제 지침 "1.1 Administrator 계정 이름 변경 또는 보안성 강화"에서 일반적으로 관리자 계정으로 잘 알려진 Administrator을 변경하지 않은 경우
+  악의적인 사용자의 패스워드 추측 공격을 통해 사용 권한 상승의 위험성 존재, 따라서 관리자 계정의 Default 계정 이름인 Administrator의 이름을 영대소문자 및 숫자를
+  랜덤화하여 유추하기 어려운 이름으로 자동 변경(Start-Process PowerShell "" -Verb RunAs를 사용한 이유는 관리자 권한이 필요하기 때문, 모듈에서 관리자 권한으로 쉘이 실행되는 경우 삭제)
+
+2) Disable_Guest_Account.xml
+- 계정 관리의 규제 지침 "1.2 Guest 계정 비활성화"에서 불특정 다수의 임시적인 시스템 접근을 차단하기 위해서 Guest 계정을 비활성화
+
+3) Change_Account_Lockout_Threshold.xml
+- 계정 관리의 규제 지침 "1.4 계정 잠금 임계값 설정"에서 시스템의 게정 잠금 임계값이 클 경우 암호 조합 공격을 자유롭게 시도할 수 있어 사용자 계정 정보의 노출 위험성이 존재
+  계정 잠금 임계값을 5로 설정
+
+
+
+
+
+
