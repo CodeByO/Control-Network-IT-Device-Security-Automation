@@ -18,14 +18,21 @@ def VulnerabilityCheckTab():
     vulnerability_check_tab = QWidget()
     layout = QVBoxLayout(vulnerability_check_tab)
     
+    # OS 선택 드롭다운
+    OSTypeComboBox = QComboBox()
+    OSTypeComboBox.addItem("대상 OS 선택") 
+    OSTypeComboBox.addItem("Windows")
+    OSTypeComboBox.addItem("Linux")
+    OSTypeComboBox.setPlaceholderText("대상 OS 선택")  
+    layout.addWidget(OSTypeComboBox)
+
     # 접속 방식 선택 드롭다운
-    ''
-    connectionTypeComboBox = QComboBox()
-    connectionTypeComboBox.addItem("접속 방식 선택") 
-    connectionTypeComboBox.addItem("Windows")
-    connectionTypeComboBox.addItem("Linux")
-    connectionTypeComboBox.setPlaceholderText("접속 방식 선택")  
-    layout.addWidget(connectionTypeComboBox)
+    ConnectionTypeComboBox = QComboBox()
+    ConnectionTypeComboBox.addItem("접속 방식 선택") 
+    ConnectionTypeComboBox.addItem("SSH")
+    ConnectionTypeComboBox.addItem("Samba")
+    ConnectionTypeComboBox.setPlaceholderText("접속 방식 선택")  
+    layout.addWidget(ConnectionTypeComboBox)
     
     # 시스템 IP 주소 입력
     ipLineEdit = QLineEdit()
