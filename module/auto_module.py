@@ -10,7 +10,7 @@ from pathlib import Path
 from datetime import datetime
 
 
-from smb.SMBConnection import SMBConnection
+from smb.SMBConnection import SMBConnection, OperationFailure, NotConnectedError, NotReadyError, ProtocolError
 from paramiko import SSHClient, AutoAddPolicy
 from paramiko.ssh_exception import (
     SSHException,
@@ -42,7 +42,7 @@ def ConnectTarget(ip:str, port:str, connection_type:str, username:str, password:
     :param password: 
         접속을 위한 비밀번호
     :param servername: 
-        samba 연결을 위한 서버 컴퓨터 이름
+        samba 연결을 위한 서버 컴퓨터 이름 (리눅스는 불필요 하지만 윈도우는 필요)
     :return:
         각 접속 프로토콜 클래스 or None
     """
@@ -58,7 +58,7 @@ def ConnectTarget(ip:str, port:str, connection_type:str, username:str, password:
         conn = SMBConnection(username, password, 'auto_inspection', servername, 'WORKGROUP', use_ntlm_v2=True)
         try:
             result = conn.connect(ip, port)
-        except OSError:
+        except (NotConnectedError, OSError, NotReadyError, ProtocolError):
             return None
         finally:
             if result:
@@ -165,7 +165,10 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
             if connection_type == "ssh":
                 stdin, stdout, stderr = session.exec_command(command_string)
             elif connection_type == "samba":
-                pass
+                try:
+                    pass
+                except OperationFailure:
+                    pass
         inspection_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(inspection_time)
         print(stdout.read().decode('euc-kr'))
