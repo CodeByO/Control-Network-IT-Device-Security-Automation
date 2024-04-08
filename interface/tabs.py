@@ -3,8 +3,44 @@
 # [Writer] geonheek, yuu4172
 
 import sys
-from PyQt5.QtWidgets import QVBoxLayout, QComboBox, QLineEdit, QApplication, QMainWindow, QTabWidget, QPushButton, QWidget
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QVBoxLayout, QComboBox, QLineEdit, QApplication, QMainWindow, QTabWidget, QPushButton, QWidget, QTabBar
+from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtGui import QPainter, QTransform
+
+# [CLASS] VerticalTabWidget
+# [DESC] 수직 탭 위젯을 위한 커스텀 QTabBar 구현
+# [TODO] None
+# [ISSUE] None
+class VerticalTabWidget(QTabBar):
+    """
+    수직 탭 위젯을 위한 커스텀 QTabBar
+    """
+    # [Func] paintEvent
+    # [DESC] 수직 탭 텍스트를 그리기 위한 이벤트 핸들러
+    # [TODO] None
+    # [ISSUE] None
+    def paintEvent(self, event):
+        """
+        각 탭의 텍스트를 그리는 이벤트 핸들러
+        :param event: 이벤트 객체
+        """
+        painter = QPainter(self)
+        
+        for index in range(self.count()):
+            tab_rect = self.tabRect(index) # 현재 탭의 위치와 크기 정보
+            tab_text = self.tabText(index) # 현재 탭의 텍스트
+            
+            painter.save()
+            
+            # 탭의 텍스트를 수직으로 그리기 위한 변환 설정
+            transform = QTransform()
+            transform.translate(tab_rect.x() + tab_rect.width() / 2, tab_rect.y() + tab_rect.height() / 2)
+            transform.translate(-tab_rect.height() / 2, -tab_rect.width() / 2)
+            
+            painter.setTransform(transform)
+            painter.drawText(QRect(0, 0, tab_rect.height(), tab_rect.width()), Qt.AlignCenter, tab_text)
+            
+            painter.restore() 
 
 # [Func] VulnerabilityCheckTab
 # [DESC] 취약점 점검 탭 위젯 생성
@@ -86,7 +122,7 @@ def InspectionHistoryTab():
 # [Func] SetUpTabs
 # [DESC] 애플리케이션 내 탭 위젯 구성 및 스타일 설정
 # [TODO] 탭별 추가 기능 구현
-# [ISSUE] 탭 레이블 회전
+# [ISSUE] None
 def SetUpTabs():
     """
     애플리케이션 내 탭 위젯의 구성
@@ -94,11 +130,12 @@ def SetUpTabs():
     """
     # 탭 위젯 구성
     tab_widget = QTabWidget()
+    tab_widget.setTabBar(VerticalTabWidget()) 
     vulnerability_check_tab = VulnerabilityCheckTab()
     inspection_history_tab = InspectionHistoryTab()
     tab_widget.addTab(vulnerability_check_tab, "취약점\n점검")
     tab_widget.addTab(inspection_history_tab, "점검 이력\n조회")
-    tab_widget.setTabPosition(QTabWidget.North)
+    tab_widget.setTabPosition(QTabWidget.West)
     
     # 탭 위젯 스타일 설정
     tab_widget.setStyleSheet("""
@@ -108,7 +145,6 @@ def SetUpTabs():
             } 
         """)
     return tab_widget
-
 
 # [Func] main
 # [DESC] 애플리케이션 메인 함수
