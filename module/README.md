@@ -10,8 +10,8 @@
 
 [DOING]
 
-    특정 IP, Port 대상으로 SSH, Telnet, Serial, samba 통신 연결 하는 코드 구현
-        -> 김연수님 작업 중 (4월 7일까지)
+    특정 IP, Port 대상으로 SSH, samba 통신 연결 하는 코드 구현 일부 완료 및 지속적인 수정 예정
+        -> 김연수님 작업 중 (4월 7일~)
     
 [DONE]
 
