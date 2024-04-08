@@ -8,7 +8,8 @@ import signal
 import subprocess
 from pathlib import Path
 from datetime import datetime
-
+from netmiko import ConnectHandler
+from smb.SMBConnection import SMBConnection
 import telnetlib
 import netmiko
 import serial
@@ -104,19 +105,126 @@ conn.close()
 # [Func] ConnectTarget
 # [DESC] 보안 취약점 점검 대상 PC에 접속
 # [TODO] 각 인자에 맞게 코드 구현
-# [ISSUE] None
-def ConnectTarget(target_os:str, ip:str, port:str, type:str, username:str, password:str):
+# [ISSUE] 1. sh를 통한 windows 연결, samba 통한 linux 연결 고려해야함
+#         2. 예외처리 수정 및 추가 해야함
+def ConnectTarget(ip:str, protocol:str, type:str):
     """
     보안 취약점 점검 대상 PC에 접속
-    :param target_os: 접속하고자 하는 운영체제(Windows or Linux)
     :param ip: 접속하고자 하는 대상 PC 주소
-    :param port: 접속하고자 하는 포트 번호
-    :param type: 접속 프로토콜 지정 (ssh or samba)
-    :param username: 접속을 위한 계정 이름
-    :param password: 접속을 위한 비밀번호
+    :param protocol: 접속하고자 하는 프로토콜 (ssh or samba)
+    :param type: 접속 프로토콜 지정 (linux or windows)
     :return: Not Yet
     """
-    pass
+    if type == "linux":
+        if protocol == "ssh":
+            # SSH 접속 로직 (예: netmiko 사용)
+            device = {
+                'device_type': 'linux',
+                'host': ip,  # 리눅스 서버 IP 주소
+                'username': '',  # 사용자 이름
+                'password': '',  # 비밀번호
+                'port': 22,  # 기본값은 22, 다른 포트를 사용하는 경우 변경
+                'secret': '',
+            }
+
+            # SSH 연결
+            try:
+                net_connect = ConnectHandler(**device, timeout=100)
+                net_connect.enable()
+                print(f"Successfully connected to {device['host']}")
+
+                # 명령 실행 예: 'ls'
+                output = net_connect.send_command('ls')
+                print(output)
+                return net_connect
+            except ValueError as e:
+                print(f"Failed to connect to {ip}: {str(e)}")
+            except ImportError as e:
+                print(f"필요한 모듈을 찾을 수 없습니다: {str(e)}. 'pip install netmiko'을 실행하여 설치해주세요.")
+            except KeyboardInterrupt:
+                print("강제 종료 되었습니다.")
+            except UnboundLocalError as e:
+                print(f"잘못된 ip를 입력하셨습니다: {str(e)}.")
+            except Exception as e:
+                print(f"An unexpected error occurred while connecting to {device['host']}: {str(e)}")
+
+            finally:
+                # 연결 종료
+                net_connect.disconnect()
+        elif protocol == "smb":
+            '''
+            # Samba 접속 로직 (예: smbprotocol 사용)
+            # Samba 서버 연결 정보 설정
+            server_name = ''
+            server_ip = ip
+            server_share = ''
+            user_name = ''
+            password = ''
+
+            # Samba 서버에 연결
+            conn = SMBConnection(user_name, password, 'pysmb_test', server_name, use_ntlm_v2=True)
+            conn.connect(server_ip, 139)
+
+            # 공유 폴더 내의 파일 및 디렉토리 목록 가져오기
+            file_list = conn.listPath(server_share, '/')
+            for f in file_list:
+                print(f.filename)
+
+            # 연결 종료
+            conn.close()
+        else:
+            raise ValueError("Invalid protocol. Supported protocols: 'ssh', 'smb'")
+            '''
+    elif type == "windows":
+        if protocol == "ssh":
+            '''
+            # 윈도우에 SSH 연결
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=host, username=username, password=password, port=ssh_port, timeout=timeout)
+            print(f"Successfully connected to {host} via SSH (Windows)")
+            return ssh
+            '''
+        elif protocol == "smb":
+            # 윈도우에 SMB 연결
+            # Samba 접속 로직 (예: smbprotocol 사용)
+            # Samba 서버 연결 정보 설정
+            server_name = ''
+            server_ip = ip
+            server_share = ''
+            user_name = ''
+            password = ''
+
+            try:
+                # Samba 서버에 연결
+                conn = SMBConnection(user_name, password, 'pysmb_test', server_name, use_ntlm_v2=True)
+                conn.connect(server_ip, 139)
+
+                # 공유 폴더 내의 파일 및 디렉토리 목록 가져오기
+                file_list = conn.listPath(server_share, '/')
+                for f in file_list:
+                    print(f.filename)
+                return conn
+            except ValueError as e:
+                return print(f"Failed to connect to {ip}: {str(e)}")
+            except ImportError as e:
+                return print(f"필요한 모듈을 찾을 수 없습니다: {e}. 'pip install smbprotocol'을 실행하여 설치해주세요.")
+
+            except Exception as e:
+                print(f"An unexpected error occurred while connecting to {server_ip}: {str(e)}")
+                return None
+            finally:
+                # 연결 종료
+                conn.close()
+        else:
+            raise ValueError("Invalid protocol. Supported protocols: 'ssh', 'smb'")
+    else:
+        raise ValueError("Invalid OS type. Supported types: 'linux', 'windows'")
+    return None
+
+# 사용 예시
+# ConnectTarget("xxx.xxx.xxx.xxx", "ssh", "linux")
+# ConnectTarget("xxx.xxx.xxx.xxx", "smb", "windows")
 
 
 # [Func] ParseXml
