@@ -98,13 +98,13 @@ def SetUpTabs():
     inspection_history_tab = InspectionHistoryTab()
     tab_widget.addTab(vulnerability_check_tab, "취약점\n점검")
     tab_widget.addTab(inspection_history_tab, "점검 이력\n조회")
-    tab_widget.setTabPosition(QTabWidget.West)
+    tab_widget.setTabPosition(QTabWidget.North)
     
     # 탭 위젯 스타일 설정
     tab_widget.setStyleSheet("""
         QTabBar::tab {
             height: 80px; /* 탭의 높이 조정 */
-            width: 70px; /* 탭의 너비 조정 */ 
+            width: 100px; /* 탭의 너비 조정 */ 
             } 
         """)
     return tab_widget
