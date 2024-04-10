@@ -27,7 +27,7 @@
 [tag]
 
     Result_Type - action, info, registry
-    CommandType - Powershell, cmd, terminal
+    CommandType - Powershell, cmd, Bash
     PluginVersion - 1
     PluginName - 플러그인 이름
     TargetOS - Windows, Linux
