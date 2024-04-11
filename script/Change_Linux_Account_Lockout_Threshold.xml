@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<Plugin name="Change_Linux_Account_Lockout_Threshold">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Change_Linux_Account_Lockout_Threshold.xml</PluginName>
+    <TargetOS>Linux</TargetOS>
+    <Result_Type>action</Result_Type>
+    <Info>계정 잠금 임계값 변경</Info>
+    <Description>계정 잠금 임계값을 5회로 설정하며 실패한 로그인 시도 5회 초과 시 2분간 계정 잠금, 관리자 계정은 잠기지 않도록 설정</Description>
+    <Commands>
+        <Command>
+            <CommandName>Check_Linux_Account_Lockout_Threshold</CommandName>
+            <CommandType>Bash</CommandType>
+            <CommandString>sudo sh -c 'echo "auth required /lib/security/pam_tally.so deny=5 unlock_time=120 no_magic_root" >> /etc/pam.d/common-auth'</CommandString>
+        </Command>
+    </Commands>
+</Plugin>
