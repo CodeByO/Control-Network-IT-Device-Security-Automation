@@ -22,7 +22,7 @@ path_src = Path(__file__)
 path_database = path_src.parent / "AutoInspection.db"
 
 inspection_targets = list()
-
+set_os_type = None
 # [CLASS] VerticalTabWidget
 # [DESC] 수직 탭 위젯을 위한 커스텀 QTabBar 구현
 # [TODO] None
@@ -178,9 +178,10 @@ class MainPage(QWidget):
             self.ShowAlert("잘못된 형식의 비밀번호 입니다")
             return
         global inspection_targets
-        if len(inspection_targets) == 0:
+        global set_os_type
+        if len(inspection_targets) == 0 or set_os_type != os_type:
             global path_database
-
+            set_os_type = os_type
             if not os.path.exists(path_database):
                 self.ShowAlert("DB가 존재하지 않습니다.")
                 return
@@ -189,7 +190,7 @@ class MainPage(QWidget):
             cursor = con.cursor()
 
             try:
-                cursor.execute("SELECT PluginName, Info, Description, CommandType, ResultType from InspectionTargets WHERE TargetOS=? AND DeleteFlag=0", (os_type, ))
+                cursor.execute("SELECT TargetID, PluginName, Info, Description, CommandType, ResultType from InspectionTargets WHERE TargetOS=? AND DeleteFlag=0", (os_type, ))
             except (sqlite3.OperationalError, sqlite3.ProgrammingError):
                 self.ShowAlert("DB 실행 에러")
                 return
@@ -199,7 +200,7 @@ class MainPage(QWidget):
             if len(inspection_targets) == 0:
                 self.ShowAlert("대상 OS에 해당하는 규제 지침이 없습니다. 추가해주세요")
                 return
-            
+        
         self.inspection_list_page.SetData(inspection_targets)
         self.inspection_list_page.SetTarget(os_type, connection_type, ip, port, id, password)
         self.stackedWidget.addWidget(self.inspection_list_page)
@@ -222,7 +223,7 @@ class InspectionListPage(QWidget):
         self.stackedWidget = stackedWidget
         
         self.tableWidget = QTableWidget()
-        self.tableWidget.setColumnCount(7)
+        self.tableWidget.setColumnCount(8)
         self.tableWidget.setHorizontalHeaderLabels(['선택', '이름', '설명', '실행 방식', '결과 방식', '삭제'])
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -269,15 +270,15 @@ class InspectionListPage(QWidget):
         self.stackedWidget.setCurrentIndex(0)  # 첫 번째 페이지로 돌아가기
         
     def executeInspection(self):
-        plugin_lists = []
+        plugin_dict = {}
         for row in range(self.tableWidget.rowCount()):
             chkBoxWidget = self.tableWidget.cellWidget(row, 0)
             chkBox = chkBoxWidget.findChild(QCheckBox)
             if chkBox.isChecked():
-                plugin_name = self.tableWidget.item(row, 6).text()
-                plugin_lists.append(plugin_name)
-        InspectionAutomation(self.os_type, self.ip, self.port, self.connection_type, self.id, self.password, plugin_lists)
-    def addRow(self, plugin, name, description, tool, action):
+                plugin_dict[int(self.tableWidget.item(row, 7).text())] = self.tableWidget.item(row, 6).text()
+        InspectionAutomation(self.os_type, self.ip, self.port, self.connection_type, self.id, self.password, plugin_dict)
+    
+    def addRow(self, TargetID, plugin, name, description, tool, action):
         rowPosition = self.tableWidget.rowCount()
         self.tableWidget.insertRow(rowPosition)
 
@@ -301,30 +302,32 @@ class InspectionListPage(QWidget):
         self.tableWidget.setCellWidget(rowPosition, 5, btnDelete)
         self.tableWidget.setItem(rowPosition, 6, QTableWidgetItem(plugin))
         self.tableWidget.setColumnHidden(6, True)
+        self.tableWidget.setItem(rowPosition, 7, QTableWidgetItem(TargetID))
+        self.tableWidget.setColumnHidden(7, True)
 
     def deleteRow(self, button):
         index = self.tableWidget.indexAt(button.pos())
         if index.isValid():
             self.tableWidget.removeRow(index.row())
-            plugin = self.tableWidget.item(index.row(), 6).text()
+            target_id = self.tableWidget.item(index.row(), 7).text()
             global inspection_targets
             global path_database
             con = sqlite3.connect(path_database)
             cursor = con.cursor()
-            cursor.execute("SELECT TargetID from InspectionTargets WHERE PluginName=?", (plugin, ))
+            cursor.execute("SELECT TargetID from InspectionTargets WHERE TargetID=", (target_id, ))
             
             target_index = cursor.fetchone()
             target_index = target_index[0]
             
             inspection_targets.pop(target_index)
             
-            cursor.execute("UPDATE from InsectionTargets SET DeleteFlag=1 WHERE PluginName=?", (plugin, ))
+            cursor.execute("UPDATE from InsectionTargets SET DeleteFlag=1 WHERE TargetID=?", (target_id, ))
             
             con.close()
             
     def SetData(self, inspection_data):
         for item in inspection_data:
-            self.addRow(item[0], item[1], item[2], item[3], item[4])
+            self.addRow(item[0], item[1], item[2], item[3], item[4], item[5])
     
     def SetTarget(self, os_type, connection_type, ip, port, id, password):
         self.os_type = os_type
