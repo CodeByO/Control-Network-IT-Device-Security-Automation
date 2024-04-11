@@ -70,7 +70,7 @@ def ConnectTarget(ip:str, port:str, connection_type:str, username:str, password:
 # [DESC] XML 스크립트 로드 및 정리
 # [TODO] 예외 처리 추가
 # [ISSUE] None
-def ParseXml(target:str, plugin_name: list)->list:
+def ParseXml(target:str, plugin_dict : dict)->list:
     """
     XML 스크립트 로드 및 정리
     출처 : https://king-rabbit.github.io/python/xml-parsing/
@@ -94,7 +94,7 @@ def ParseXml(target:str, plugin_name: list)->list:
             root = tree.getroot()
             target_os = root.find('TargetOS').text
             name = root.attrib.get('name')
-            if target_os == target and name in plugin_name:
+            if target_os == target and name in plugin_dict.values():
                 
                 # Result_Type 가져오기
                 result_type = root.find('Result_Type').text
@@ -122,7 +122,7 @@ def ParseXml(target:str, plugin_name: list)->list:
 # [DESC] 정리된 스크립트를 이용하여 보안 취약점 점검
 # [TODO] 기능 구현
 # [ISSUE] None
-def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, username:str, password:str, plugin_list:list):
+def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, username:str, password:str, plugin_dict:dict):
     '''
     점검 실행
     :param target_os: 
@@ -138,11 +138,12 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
     :param password: 
         접속을 위한 비밀번호
     :param plugin_list: 
-        선택한 plugin 문자열 리스트 (ex, ['Anti_Virus_Update', 'Change_Account_Lockout_Threshold'])
+        선택한 규제 항목의 TargetID와 PluginName 딕셔너리 (ex, {1 : 'Anti_Virus_Update',  2: 'Change_Account_Lockout_Threshold'})
     :return: 
         0(성공), 1(대상 접속 실패), 2(점검 실패) - 미확정
 
     '''
+    print(target_os, ip, port, connection_type, username, password, plugin_dict)
     session = ConnectTarget(target_os, ip, port, connection_type, username, password)
     
     # 예시, 원격 연결에 문제가 생겼다면 1, 점검에 문제가 발생하면 2
@@ -151,8 +152,8 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
     
     # Result_Type - action, info, registry
     # CommandType - Powershell, cmd, terminal
-    
-    inspection_lists = ParseXml(connection_type, plugin_list)
+
+    inspection_lists = ParseXml(connection_type, plugin_dict)
     for command in inspection_lists:
         plugin_name = command.get("PluginName")
         result_type = command.get("ResultType")
@@ -189,10 +190,10 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
     # con.close()
 
 
-if __name__ == '__main__':
-    # 특정 signal 입력 시 수행하는 동작 정의
-    def SignalHandler(sig, frame):
-        pass
+# if __name__ == '__main__':
+#     # 특정 signal 입력 시 수행하는 동작 정의
+#     def SignalHandler(sig, frame):
+#         pass
 
-    # SIGINT(Ctrl + C) 입력시 singal_handler 실행
-    signal.signal(signal.SIGINT, SignalHandler)
+#     # SIGINT(Ctrl + C) 입력시 singal_handler 실행
+#     signal.signal(signal.SIGINT, SignalHandler)
