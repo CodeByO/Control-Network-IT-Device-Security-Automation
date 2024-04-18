@@ -1,0 +1,123 @@
+Kim YeonSoo
+
+- Windows
+
+<PluginName>Change_Account_Lockout_Threshold.xml</PluginName>
+계정 잠금 임계값 설정값 : 'Start-Process PowerShell "-Command net accounts /lockoutthreshold:5" -Verb RunAs'ㄴ
+stdout:
+stderr: 'Start-Process'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
+배치 파일이 아닙니다.
+'powershell.exe -Command "net user guest /active:no"'로 바꿨더니 실행이 됨.
+stdout: 명령을 잘 실행했습니다.
+stderr:
+----------------------------------------------------------------------------------------------------
+<PluginName>Change_Administrator_Account_Name.xml</PluginName>
+Administrator 계정 이름 변경 : $TokenSet = @{
+			U = [Char[]]'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+			L = [Char[]]'abcdefghijklmnopqrstuvwxyz'
+			N = [Char[]]'0123456789'
+		}
+
+		$Upper = Get-Random -Count 5 -InputObject $TokenSet.U
+		$Lower = Get-Random -Count 5 -InputObject $TokenSet.L
+		$Number = Get-Random -Count 5 -InputObject $TokenSet.N
+
+		$StringSet = $Upper + $Lower + $Number
+
+		$pwd = -join (Get-Random -Count 8 -InputObject $StringSet)
+		Start-Process PowerShell "-Command Rename-LocalUser -Name Administrator -NewName $pwd" -Verb RunAs
+stdout : 
+stderr : 'Rename-LocalUser'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
+배치 파일이 아닙니다.
+
+# 수정 필요
+----------------------------------------------------------------------------------------------------
+<PluginName>Disable_Guest_Account.xml</PluginName>
+Guest 계정 사용 안함 설정 : 'Start-Process PowerShell "-Command net user guest /active:no" -Verb RunAs'
+stdout:
+stderr: 'Start-Process'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
+배치 파일이 아닙니다.
+powershell.exe -Command "net user guest /active:no"로 바꿨더니 실행이 됨.
+stdout: 명령이 잘 실행했습니다.
+stderr: 
+----------------------------------------------------------------------------------------------------
+
+<PluginName>anti-virus-update.xml</PluginName>
+백신 프로그램 업데이트 : Update-MpSignature -UpdateSource MicrosoftUpdateServer
+stdout:
+stderr: 'Update-MpSignature'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
+배치 파일이 아닙니다.
+'powershell.exe -Command "Update-MpSignature -UpdateSource MicrosoftUpdateServer"'
+stdout:
+stderr: 
+둘 다 출력되는것이 없음.
+#확인 필요
+----------------------------------------------------------------------------------------------------
+<PluginName>local-account-password-lifetime.xml</PluginName>
+컴퓨터 계정 암호 최대 사용 기간 설정 여부 점검 : 
+secedit /export /cfg $env:temp\secpol.cfg; (Get-Content $env:temp\secpol.cfg -Raw).Replace('PasswordAge=0', 'PasswordAge=90').Replace('ClearTextPassword=0', 'ClearTextPassword=1') | Set-Content $env:temp\secpol.cfg; secedit /configure /db secedit.sdb /cfg $env:temp\secpol.cfg /areas SECURITYPOLICY; Remove-Item $env:temp\secpol.cfg
+stdout: 
+작업을 성공적으로 완료했습니다.
+자세한 정보는 %windir%\security\logs\scesrv.log를 참조하십시오.
+5퍼센트 완료됨(0/18) 	보안 정책 프로세스 영역        
+22퍼센트 완료됨(3/18) 	보안 정책 프로세스 영역        
+44퍼센트 완료됨(7/18) 	보안 정책 프로세스 영역        
+61퍼센트 완료됨(10/18) 	보안 정책 프로세스 영역        
+77퍼센트 완료됨(13/18) 	보안 정책 프로세스 영역        
+100퍼센트 완료됨(18/18) 	보안 정책 프로세스 영역        
+                                                                           
+작업을 성공적으로 완료했습니다.
+자세한 정보는 %windir%\security\logs\scesrv.log를 참조하십시오.
+stderr: 
+----------------------------------------------------------------------------------------------------
+<PluginName>remote-access-registry.xml</PluginName>
+원격으로 액세스 할 수 있는 레지스트리 경로 : Set-Service -Name "RemoteRegistry" -StartupType Disabled; Stop-Service -Name "RemoteRegistry"
+stdout:
+stderr: 'Set-Service'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
+배치 파일이 아닙니다.
+powershell.exe Set-Service -Name "RemoteRegistry" -StartupType Disabled; Stop-Service -Name "RemoteRegistry"
+stdout:
+stderr: 
+둘 다 출력되는것이 없음.
+#확인 필요
+----------------------------------------------------------------------------------------------------
+<PluginName>remote-event-log-access-block.xml</PluginName>
+원격에서 이벤트 로그파일 접근 차단 :
+‘(Get-Acl "%systemroot%\system32\config").Access | Where-Object { $_.IdentityReference -eq 'Everyone' } | ForEach-Object { $acl = Get-Acl "%systemroot%\system32\config"; $acl.RemoveAccessRule($_); Set-Acl -Path "%systemroot%\system32\config" -AclObject $acl }’
+stdout:
+stderr: .Access은(는) 예상되지 않았습니다.
+'(Get-Acl "%systemroot%\system32\LogFilesnfig").Access | Where-Object { $_.IdentityReference -eq "Everyone" } | ForEach-Object { $acl = Get-Acl "%systemroot%\system32\LogFiles"; $acl.RemoveAccessRule($_); Set-Acl -Path "%systemroot%\system32\LogFiles" -AclObject $acl }'
+stdout:
+stderr: .Access은(는) 예상되지 않았습니다.
+powershell.exe -Command $acl = Get-Acl '%systemroot%\\system32\\config'
+$acl.Access | Where-Object { $_.IdentityReference -eq 'Everyone' } | ForEach-Object {
+$acl.RemoveAccessRule($_) }
+Set-Acl -Path '%systemroot%\\system32\\config' -AclObject $acl
+stdout:
+stderr: 
+둘 다 출력되는것이 없음.
+$acl = Get-Acl '%systemroot%\\system32\\LogFiles'
+$acl.Access | Where-Object { $_.IdentityReference -eq 'Everyone' } | ForEach-Object {
+$acl.RemoveAccessRule($_) }
+Set-Acl -Path '%systemroot%\\system32\\LogFiles' -AclObject $acl
+stdout:
+stderr: 
+둘 다 출력되는것이 없음.
+#확인 필요
+----------------------------------------------------------------------------------------------------
+<PluginName>windows-verify-mode.xml</PluginName>
+DB 로그인 시 Windows 인증 모드 적절성 점검 : [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO') | Out-Null; $server = New-Object Microsoft.SqlServer.Management.Smo.Server 'server-name'; $server.Settings.LoginMode = [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated; $server.Alter()
+stdout: 
+stderr: 파일 이름, 디렉터리 이름 또는 볼륨 레이블 구문이 잘못되었습니다.
+#확인 필요
+----------------------------------------------------------------------------------------------------
+
+- linux 
+<PluginName>Change_Linux_Account_Lockout_Threshold.xml</PluginName>
+계정 잠금 임계값 변경 : sudo sh -c 'echo "auth required /lib/security/pam_tally.so deny=5 unlock_time=120 no_magic_root" >> /etc/pam.d/common-auth'
+리눅스에서 직접 입력하면 실행이 되지만, 원격으로 입력하면 SSH 세션이 사용자 패스워드를 요구하기 때문에 stderr에 bash: line 1: /etc/pam.d/common-auth: Permission denied가 출력된다.
+
+----------------------------------------------------------------------------------------------------
+참고할점 : -Verb RunAs 는 점검 대상 PC에 저장 되어있는 스크립트 파일을 실행할 때 쓰이는 것으로 보임.
+위에서 입력한 명령어들은 따로 관리자 권한 실행을 하는 명령어를 넣지 않았는데 만약 필요하다면 runas /user:administrator "powershell.exe -Command 'Your-Command-Here'"의 형식으로 명령어를 입력 해야 할 것 같음.
+stdout, stderr가 아무것도 안나온것들은 각 설정값을 확인해볼 수 있는 명령어를 이용하여 확인한 결과 원하는 설정값으로 설정이 되어있는 것을 확인함. 그러나 명령어 실행 전부터 설정 되어있었을수도 있기 때문에 확인 필요.
