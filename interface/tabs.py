@@ -275,7 +275,7 @@ class InspectionListPage(QWidget):
             chkBoxWidget = self.tableWidget.cellWidget(row, 0)
             chkBox = chkBoxWidget.findChild(QCheckBox)
             if chkBox.isChecked():
-                plugin_dict[int(self.tableWidget.item(row, 7).text())] = self.tableWidget.item(row, 6).text()
+                plugin_dict[self.tableWidget.item(row, 6).text()] = int(self.tableWidget.item(row, 7).text())
         InspectionAutomation(self.os_type, self.ip, self.port, self.connection_type, self.id, self.password, plugin_dict)
     
     def addRow(self, TargetID, plugin, name, description, tool, action):
