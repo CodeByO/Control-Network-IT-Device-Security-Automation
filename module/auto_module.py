@@ -3,12 +3,9 @@
 # [Writer] CodeByO
 
 import os
-import sys
-import signal
-import subprocess
 from pathlib import Path
 from datetime import datetime
-
+from tqdm import tqdm
 
 from smb.SMBConnection import SMBConnection, OperationFailure, NotConnectedError, NotReadyError, ProtocolError
 from paramiko import SSHClient, AutoAddPolicy
@@ -23,11 +20,12 @@ import xml.etree.ElementTree as ET
 
 import sqlite3
 
+path_src = Path(__file__)
+
 # [Func] ConnectTarget
 # [DESC] 보안 취약점 점검 대상 PC에 접속
-# [TODO] 각 인자에 맞게 코드 구현
-# [ISSUE] 1. sh를 통한 windows 연결, samba 통한 linux 연결 고려해야함
-#         2. 예외처리 수정 및 추가 해야함
+# [TODO] 예외처리 추가
+# [ISSUE] None
 def ConnectTarget(ip:str, port:str, connection_type:str, username:str, password:str, servername:str = "")->classmethod:
     """
     보안 취약점 점검 대상 PC에 접속
@@ -82,7 +80,7 @@ def ParseXml(target:str, plugin_dict : dict)->list:
     :return: 
         XML 파일에서 파싱한 dict 데이터 리스트
     """
-    path_src = Path(__file__)
+    global path_src
     path_script = path_src.parent.parent / 'script'
     script_files = os.listdir(path_script)
     inspection_lists = []
@@ -94,7 +92,7 @@ def ParseXml(target:str, plugin_dict : dict)->list:
             root = tree.getroot()
             target_os = root.find('TargetOS').text
             name = root.attrib.get('name')
-            if target_os == target and name in plugin_dict.values():
+            if target_os == target and name in plugin_dict.keys():
                 
                 # Result_Type 가져오기
                 result_type = root.find('Result_Type').text
@@ -120,7 +118,7 @@ def ParseXml(target:str, plugin_dict : dict)->list:
 
 # [Func] InspectionAutomation
 # [DESC] 정리된 스크립트를 이용하여 보안 취약점 점검
-# [TODO] 기능 구현
+# [TODO] result 타입에 따라 실행 구분 및 action 타입에 점검 항목이 정상적으로 동작하는지 파악
 # [ISSUE] None
 def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, username:str, password:str, plugin_dict:dict):
     '''
@@ -140,7 +138,7 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
     :param plugin_list: 
         선택한 규제 항목의 TargetID와 PluginName 딕셔너리 (ex, {1 : 'Anti_Virus_Update',  2: 'Change_Account_Lockout_Threshold'})
     :return: 
-        0(성공), 1(대상 접속 실패), 2(점검 실패) - 미확정
+        0(성공), 1(대상 접속 실패), 2(점검 실패), 3(데이터베이스 접속 에러) - 미확정
 
     '''
     print(target_os, ip, port, connection_type, username, password, plugin_dict)
@@ -152,16 +150,22 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
     
     # Result_Type - action, info, registry
     # CommandType - Powershell, cmd, terminal
-
+    global path_src
+    path_database = path_src.parent / "interface" / "AutoInspection.db"
+        
+    if os.path.exists(path_database):
+        con = sqlite3.connect(path_database)
+    else:
+        return 3
     inspection_lists = ParseXml(connection_type, plugin_dict)
-    for command in inspection_lists:
+    
+    for command in tqdm(inspection_lists):
         plugin_name = command.get("PluginName")
+        target_id = plugin_dict.get(plugin_name)
         result_type = command.get("ResultType")
         command_count = int(command.get("CommandCount"))
         command_type = command.get("CommandType")
         command_string = command.get("CommandString")
-        print(plugin_name)
-        print(result_type)
         for _ in range(command_count):
             if connection_type == "ssh":
                 stdin, stdout, stderr = session.exec_command(command_string)
@@ -170,30 +174,22 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
                     pass
                 except OperationFailure:
                     pass
-        inspection_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(inspection_time)
-        print(stdout.read().decode('euc-kr'))
+        inspection_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        stdout = stdout.read().decode('euc-kr')
+        stderr = stderr.read().dedcode('euc-kr')
+        inspection_status = 0
+        if result_type == "action":
+            if len(stderr) == 0:
+                inspection_status = 1
+            
+        inspection_data = (target_os,connection_type, ip, port, username, target_id, inspection_status, inspection_date, stdout, stderr )
         
+        
+        cursor = con.cursor()
+        cursor.execute("INSERT INTO InspectionItems(OSType, ConnectionType, IPAddress, PortNumber, RemoteID, TargetID, InspectionStatus, InspectionData, StandardOuput, StandardError) VALUES(?,?,?,?,?,?,?,?,?,?)", inspection_data)
+        
+    
+    con.commit()
+    con.close()
     # 세션 종료 시 사용(ssh, samba 동일)
     session.close()
-
-    # UI에서 점검 실행 시 아래 코드 사용
-    # process_info = Thread(target=InspectionAutomation, args=(arguments,))
-    # process_info.start()
-    
-    # SQLite 사용 방법
-    # con = sqlite3.connect("")
-    # cursor = con.cursor()
-    # insert_data = f"INSERT INTO table VALUES({""},{""},{""})"
-    # cursor.execute(insert_data)
-    # con.commit()
-    # con.close()
-
-
-# if __name__ == '__main__':
-#     # 특정 signal 입력 시 수행하는 동작 정의
-#     def SignalHandler(sig, frame):
-#         pass
-
-#     # SIGINT(Ctrl + C) 입력시 singal_handler 실행
-#     signal.signal(signal.SIGINT, SignalHandler)
