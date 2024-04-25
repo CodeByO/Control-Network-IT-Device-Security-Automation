@@ -182,7 +182,7 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
             if len(stderr) == 0:
                 inspection_status = 1
             
-        inspection_data = (target_os,connection_type, ip, port, username, target_id, inspection_status, inspection_date, stdout, stderr )
+        inspection_data = (target_os,connection_type, ip, int(port), username, target_id, inspection_status, inspection_date, stdout, stderr )
         
         
         cursor = con.cursor()
