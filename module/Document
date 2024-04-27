@@ -5,7 +5,7 @@ Kim YeonSoo
 stdout:
 stderr: 'Start-Process'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
 배치 파일이 아닙니다.
-'powershell.exe -Command "net user guest /active:no"'로 바꿨더니 실행이 됨.
+명령어 변경 : 'powershell.exe -Command "net user guest /active:no"'로 바꿨더니 실행이 됨.
 stdout: 명령을 잘 실행했습니다.
 stderr:
 <PluginName>Change_Administrator_Account_Name.xml</PluginName>
@@ -27,7 +27,7 @@ stdout :
 stderr : 'Rename-LocalUser'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
 배치 파일이 아닙니다.
 
-powershell.exe -Command $TokenSet = @{U = [Char[]]\'ABCDEFGHIJKLMNOPQRSTUVWXYZ\'; L = [Char[]]\'abcdefghijklmnopqrstuvwxyz\'; N = [Char[]]\'0123456789\'}; $Upper = Get-Random -Count 5 -InputObject $TokenSet.U; $Lower = Get-Random -Count 5 -InputObject $TokenSet.L; $Number = Get-Random -Count 5 -InputObject $TokenSet.N; $StringSet = $Upper + $Lower + $Number; $pwd = -join (Get-Random -Count 8 -InputObject $StringSet); Rename-LocalUser -Name Administrator -NewName $pwd
+명령어 변경 : powershell.exe -Command $TokenSet = @{U = [Char[]]\'ABCDEFGHIJKLMNOPQRSTUVWXYZ\'; L = [Char[]]\'abcdefghijklmnopqrstuvwxyz\'; N = [Char[]]\'0123456789\'}; $Upper = Get-Random -Count 5 -InputObject $TokenSet.U; $Lower = Get-Random -Count 5 -InputObject $TokenSet.L; $Number = Get-Random -Count 5 -InputObject $TokenSet.N; $StringSet = $Upper + $Lower + $Number; $pwd = -join (Get-Random -Count 8 -InputObject $StringSet); Rename-LocalUser -Name Administrator -NewName $pwd
 로 변경하여 명령어를 실행하였더니 administrator의 이름이 변경된 것을 확인함.
 Stdout:
 Stderr: 
@@ -48,7 +48,7 @@ stderr:
 stdout:
 stderr: 'Update-MpSignature'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
 배치 파일이 아닙니다.
-'powershell.exe -Command "Update-MpSignature -UpdateSource MicrosoftUpdateServer"'
+명령어 변경 : 'powershell.exe -Command "Update-MpSignature -UpdateSource MicrosoftUpdateServer"'
 stdout:
 stderr: 
 둘 다 아무것도 안뜸. 실행이 잘 되었는지 확인이 어려움
@@ -75,7 +75,7 @@ stderr:
 stdout:
 stderr: 'Set-Service'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
 배치 파일이 아닙니다.
-powershell.exe -Command Set-Service -Name "RemoteRegistry" -StartupType Disabled; Stop-Service -Name "RemoteRegistry" 로 바꿨더니 실행됨.
+명령어 변경 : powershell.exe -Command Set-Service -Name "RemoteRegistry" -StartupType Disabled; Stop-Service -Name "RemoteRegistry" 로 바꿨더니 실행됨.
 stdout:
 stderr: 
 둘 다 아무것도 안뜨지만 명령어 실행은 잘 된 것으로 확인됨.
