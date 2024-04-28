@@ -27,7 +27,7 @@ stdout :
 stderr : 'Rename-LocalUser'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
 배치 파일이 아닙니다.
 
-명령어 변경 : powershell.exe -Command $TokenSet = @{U = [Char[]]\'ABCDEFGHIJKLMNOPQRSTUVWXYZ\'; L = [Char[]]\'abcdefghijklmnopqrstuvwxyz\'; N = [Char[]]\'0123456789\'}; $Upper = Get-Random -Count 5 -InputObject $TokenSet.U; $Lower = Get-Random -Count 5 -InputObject $TokenSet.L; $Number = Get-Random -Count 5 -InputObject $TokenSet.N; $StringSet = $Upper + $Lower + $Number; $pwd = -join (Get-Random -Count 8 -InputObject $StringSet); Rename-LocalUser -Name Administrator -NewName $pwd
+명령어 변경 : powershell.exe -Command “$TokenSet = @{U = [Char[]]\'ABCDEFGHIJKLMNOPQRSTUVWXYZ\'; L = [Char[]]\'abcdefghijklmnopqrstuvwxyz\'; N = [Char[]]\'0123456789\'}; $Upper = Get-Random -Count 5 -InputObject $TokenSet.U; $Lower = Get-Random -Count 5 -InputObject $TokenSet.L; $Number = Get-Random -Count 5 -InputObject $TokenSet.N; $StringSet = $Upper + $Lower + $Number; $pwd = -join (Get-Random -Count 8 -InputObject $StringSet); Rename-LocalUser -Name Administrator -NewName $pwd”
 로 변경하여 명령어를 실행하였더니 administrator의 이름이 변경된 것을 확인함.
 Stdout:
 Stderr: 
@@ -55,7 +55,7 @@ stderr:
 ----------------------------------------------------------------------------------------------------
 <PluginName>local-account-password-lifetime.xml</PluginName>
 컴퓨터 계정 암호 최대 사용 기간 설정 여부 점검 : 
-secedit /export /cfg $env:temp\secpol.cfg; (Get-Content $env:temp\secpol.cfg -Raw).Replace('PasswordAge=0', 'PasswordAge=90').Replace('ClearTextPassword=0', 'ClearTextPassword=1') | Set-Content $env:temp\secpol.cfg; secedit /configure /db secedit.sdb /cfg $env:temp\secpol.cfg /areas SECURITYPOLICY; Remove-Item $env:temp\secpol.cfg
+Powershell.exe -Command “secedit /export /cfg $env:temp\secpol.cfg; (Get-Content $env:temp\secpol.cfg -Raw).Replace('PasswordAge=0', 'PasswordAge=90').Replace('ClearTextPassword=0', 'ClearTextPassword=1') | Set-Content $env:temp\secpol.cfg; secedit /configure /db secedit.sdb /cfg $env:temp\secpol.cfg /areas SECURITYPOLICY; Remove-Item $env:temp\secpol.cfg”
 stdout: 
 작업을 성공적으로 완료했습니다.
 자세한 정보는 %windir%\security\logs\scesrv.log를 참조하십시오.
@@ -88,21 +88,21 @@ stderr: .Access은(는) 예상되지 않았습니다.
 '(Get-Acl "%systemroot%\system32\LogFilesnfig").Access | Where-Object { $_.IdentityReference -eq "Everyone" } | ForEach-Object { $acl = Get-Acl "%systemroot%\system32\LogFiles"; $acl.RemoveAccessRule($_); Set-Acl -Path "%systemroot%\system32\LogFiles" -AclObject $acl }'
 stdout:
 stderr: .Access은(는) 예상되지 않았습니다.
-'''
-$acl = Get-Acl "$env:systemroot\\system32\\config"
-$everyone = New-Object System.Security.Principal.SecurityIdentifier "S-1-1-0"
-$acl.Access | Where-Object { $_.IdentityReference -eq $everyone } | ForEach-Object { $acl.RemoveAccessRule($_) }
-Set-Acl -Path "$env:systemroot\\system32\\config" -AclObject $acl
+'''powershell.exe -Command 
+“$acl = Get-Acl "$env:systemroot\\system32\\config";
+$everyone = New-Object System.Security.Principal.SecurityIdentifier "S-1-1-0";
+$acl.Access | Where-Object { $_.IdentityReference -eq $everyone } | ForEach-Object { $acl.RemoveAccessRule($_) };
+Set-Acl -Path "$env:systemroot\\system32\\config" -AclObject $acl”
 '''
 stdout:
 stderr: 
 둘다 아무것도 안뜸. 설정값이 잘 되어있는걸로 봐서 명령어 실행은 된것으로 예상됨
-'''
-$acl = Get-Acl $env:systemroot\\system32\\LogFiles
-$everyone = New-Object System.Security.Principal.SecurityIdentifier "S-1-1-0"
-$accessRules = $acl.Access | Where-Object { $_.IdentityReference -eq $everyone }
-$accessRules | ForEach-Object { $acl.RemoveAccessRule($_) }
-Set-Acl -Path $env:systemroot\\system32\\LogFiles -AclObject $acl
+'''powershell.exe -Command
+$acl = Get-Acl $env:systemroot\\system32\\LogFiles;
+$everyone = New-Object System.Security.Principal.SecurityIdentifier "S-1-1-0";
+$accessRules = $acl.Access | Where-Object { $_.IdentityReference -eq $everyone };
+$accessRules | ForEach-Object { $acl.RemoveAccessRule($_) };
+Set-Acl -Path $env:systemroot\\system32\\LogFiles -AclObject $acl;
 '''
 stdout:
 stderr: 
@@ -113,6 +113,11 @@ DB 로그인 시 Windows 인증 모드 적절성 점검 : [System.Reflection.Ass
 stdout: 
 stderr: 파일 이름, 디렉터리 이름 또는 볼륨 레이블 구문이 잘못되었습니다.
 확인중
+----------------------------------------------------------------------------------------------------
+'''powershell.exe -Command "[System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO') | Out-Null; $server = New-Object Microsoft.SqlServer.Management.Smo.Server 'WINTEST\SQLEXPRESS'; $server.Settings.LoginMode = [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated; $server.Alter()"'''
+Stdout:
+Stderr: 
+둘다 아무것도 안뜨지만 설정은 잘 되는것으로 확인됨.
 ----------------------------------------------------------------------------------------------------
 
 - linux 
