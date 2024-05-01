@@ -1,6 +1,6 @@
 # [Title] LoginWindow
 # [DESC] 접속 정보 입력 위젯 생성
-# [Writer] geonheek, yuu4172
+# [Writer] geonheek, yuu4172 
 
 import re
 import os
@@ -99,7 +99,7 @@ class MainPage(QWidget):
     # [ISSUE] None
     def __init__(self, stackedWidget):
         """
-        메인 페이지 클래스 초기화 메서드
+        메인 페이지 클래스 초기화 메서드 
         """
         super().__init__()
         self.stackedWidget = stackedWidget
