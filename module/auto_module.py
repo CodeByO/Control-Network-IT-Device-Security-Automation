@@ -158,7 +158,7 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
     else:
         return 3
     inspection_lists = ParseXml(connection_type, plugin_dict)
-    
+    cursor = con.cursor()
     for command in tqdm(inspection_lists):
         plugin_name = command.get("PluginName")
         target_id = plugin_dict.get(plugin_name)
@@ -186,7 +186,7 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
         inspection_items_data = (target_os,connection_type, ip, int(port), username, target_id)
         
         
-        cursor = con.cursor()
+        
         cursor.execute("INSERT INTO InspectionItems(OSType, ConnectionType, IPAddress, PortNumber, RemoteID, TargetID) VALUES(?,?,?,?,?,?)", inspection_items_data)
         items_id = cursor.lastrowid
         inspection_results_data = (target_id, items_id, inspection_status, stdout, stderr, inspection_date)
