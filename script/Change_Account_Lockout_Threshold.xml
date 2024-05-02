@@ -11,9 +11,7 @@
         <Command>
             <CommandName>Change_Account_Lockout_Threshold</CommandName>
             <CommandType>Powershell</CommandType>
-            <CommandString>
-                Start-Process PowerShell "-Command net accounts /lockoutthreshold:5" -Verb RunAs
-            </CommandString>
+            <CommandString>powershell.exe -Command "net accounts /lockoutthreshold:5; $TempFile = New-TemporaryFile;secedit /export /cfg $TempFile /areas SECURITYPOLICY;$Content = Get-Content $TempFile;Remove-Item $TempFile;$Threshold = ($Content | Select-String "LockoutBadCount").ToString().Split(\'=\')[-1].Trim();if ($Threshold -eq 5) {Write-Output \'True\'} else {Write-Output \'False\'}"</CommandString>
         </Command>
     </Commands>
 </Plugin>

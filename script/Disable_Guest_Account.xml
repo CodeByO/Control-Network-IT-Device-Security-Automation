@@ -11,9 +11,7 @@
         <Command>
             <CommandName>Disable_Guest_Account</CommandName>
             <CommandType>Powershell</CommandType>
-            <CommandString>
-                Start-Process PowerShell "-Command net user guest /active:no" -Verb RunAs
-            </CommandString>
+            <CommandString>powershell.exe -Command "Disable-LocalUser -Name "Guest"; if ((Get-LocalUser -Name "Guest").Enabled) { Write-Output "False" } else { Write-Output "True" }"</CommandString>
         </Command>
     </Commands>
 </Plugin>

@@ -11,7 +11,7 @@
         <Command>
             <CommandName>Windows_Verify_Mode</CommandName>
             <CommandType>Powershell</CommandType>
-            <CommandString>[System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO') | Out-Null; $server = New-Object Microsoft.SqlServer.Management.Smo.Server 'server-name'; $server.Settings.LoginMode = [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated; $server.Alter()</CommandString>
+            <CommandString>powershell.exe -Command "[System.Reflection.Assembly]::LoadWithPartialName(\'Microsoft.SqlServer.SMO\') | Out-Null;$server = New-Object Microsoft.SqlServer.Management.Smo.Server \'WINTEST\\SQLEXPRESS\';$initialLoginMode = $server.Settings.LoginMode;$server.Settings.LoginMode = [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated;$server.Alter();$updatedLoginMode = $server.Settings.LoginMode;if ($updatedLoginMode -eq [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated) {Write-Output \'True\'} else {Write-Output \'False\'}"</CommandString>
         </Command>
     </Commands>
 </Plugin>

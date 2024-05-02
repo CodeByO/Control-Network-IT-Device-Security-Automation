@@ -12,7 +12,7 @@
         <Command>
             <CommandName>Remote_Access_Registry_Disable</CommandName>
             <CommandType>Powershell</CommandType>
-            <CommandString>Set-Service -Name "RemoteRegistry" -StartupType Disabled; Stop-Service -Name "RemoteRegistry"</CommandString>
+            <CommandString>powershell.exe -Command "Set-Service -Name \'RemoteRegistry\' -StartupType Disabled;Stop-Service -Name \'RemoteRegistry\';$service = Get-Service -Name \'RemoteRegistry\';if ($service.Status -eq \'Stopped\' -and $service.StartType -eq \'Disabled\') {Write-Output \'True\'} else {Write-Output \'False\'}"</CommandString>
         </Command>
     </Commands>
 </Plugin>
