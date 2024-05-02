@@ -175,13 +175,14 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
                 except OperationFailure:
                     pass
         inspection_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        stdout = stdout.read().decode('euc-kr')
-        stderr = stderr.read().dedcode('euc-kr')
+        stdout = stdout.read().decode('euc-kr').strip()
+        stderr = stderr.read().dedcode('euc-kr').strip()
         inspection_status = 0
-        # 수정 필요
         if result_type == "action":
-            if len(stderr) == 0:
+            if 'True' in stdout:
                 inspection_status = 1
+            else:
+                inspection_status = 0
             
         inspection_items_data = (target_os,connection_type, ip, int(port), username, target_id)
         cursor.execute("INSERT INTO InspectionItems(OSType, ConnectionType, IPAddress, PortNumber, RemoteID, TargetID) VALUES(?,?,?,?,?,?)", inspection_items_data)
