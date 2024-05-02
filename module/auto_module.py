@@ -158,7 +158,7 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
     else:
         return 3
     inspection_lists = ParseXml(connection_type, plugin_dict)
-    
+    cursor = con.cursor()
     for command in tqdm(inspection_lists):
         plugin_name = command.get("PluginName")
         target_id = plugin_dict.get(plugin_name)
@@ -178,18 +178,19 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
         stdout = stdout.read().decode('euc-kr')
         stderr = stderr.read().dedcode('euc-kr')
         inspection_status = 0
+        # 수정 필요
         if result_type == "action":
             if len(stderr) == 0:
                 inspection_status = 1
             
-        inspection_data = (target_os,connection_type, ip, int(port), username, target_id, inspection_status, inspection_date, stdout, stderr )
+        inspection_items_data = (target_os,connection_type, ip, int(port), username, target_id)
+        cursor.execute("INSERT INTO InspectionItems(OSType, ConnectionType, IPAddress, PortNumber, RemoteID, TargetID) VALUES(?,?,?,?,?,?)", inspection_items_data)
         
-        
-        cursor = con.cursor()
-        cursor.execute("INSERT INTO InspectionItems(OSType, ConnectionType, IPAddress, PortNumber, RemoteID, TargetID, InspectionStatus, InspectionData, StandardOuput, StandardError) VALUES(?,?,?,?,?,?,?,?,?,?)", inspection_data)
-        
+        items_id = cursor.lastrowid
+        inspection_results_data = (target_id, items_id, inspection_status, stdout, stderr, inspection_date)
+        cursor.execute("INSERT INTO InspectionResults(TargetID, ItemsID, InspectionStatus, InspectionOutput, InspectionError, InspectionDate) VALUES(?,?,?,?,?,?)", inspection_results_data)
+        con.commit()
     
-    con.commit()
     con.close()
     # 세션 종료 시 사용(ssh, samba 동일)
     session.close()
