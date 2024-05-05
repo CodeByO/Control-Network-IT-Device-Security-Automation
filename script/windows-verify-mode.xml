@@ -11,7 +11,7 @@
         <Command>
             <CommandName>Windows_Verify_Mode</CommandName>
             <CommandType>Powershell</CommandType>
-            <CommandString>powershell.exe -Command "[System.Reflection.Assembly]::LoadWithPartialName(\'Microsoft.SqlServer.SMO\') | Out-Null;$server = New-Object Microsoft.SqlServer.Management.Smo.Server \'WINTEST\\SQLEXPRESS\';$initialLoginMode = $server.Settings.LoginMode;$server.Settings.LoginMode = [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated;$server.Alter();$updatedLoginMode = $server.Settings.LoginMode;if ($updatedLoginMode -eq [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated) {Write-Output \'True\'} else {Write-Output \'False\'}"</CommandString>
+            <CommandString>powershell.exe -Command " [System.Reflection.Assembly]::LoadWithPartialName(\'Microsoft.SqlServer.SMO\') | Out-Null; $instanceName = (Get-ItemProperty \'HKLM:\\SOFTWARE\\Microsoft\\Microsoft SQL Server\').InstalledInstances | Select-Object -First 1; $serverName = $env:COMPUTERNAME + \'\\\' + $instanceName; $server = New-Object Microsoft.SqlServer.Management.Smo.Server $serverName; $initialLoginMode = $server.Settings.LoginMode; $server.Settings.LoginMode = [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated; $server.Alter(); $updatedLoginMode = $server.Settings.LoginMode; if ($updatedLoginMode -eq [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated) { Write-Output \'True\' } else { Write-Output \'False\' }"</CommandString>
         </Command>
     </Commands>
 </Plugin>
