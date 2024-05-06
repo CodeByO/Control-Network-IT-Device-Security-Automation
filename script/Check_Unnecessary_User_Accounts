@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Check_Unnecessary_User_Accounts">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Check_Unnecessary_User_Accounts.xml</PluginName>
+    <TargetOS>Windows</TargetOS>
+    <Result_Type>info</Result_Type>
+    <Info>불필요한 계정 확인</Info>
+    <Description>시스템에 등록된 모든 사용자 계정을 확인하고, 불필요한 계정을 식별</Description>
+    <Commands>
+		    <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Check_Unnecessary_User_Accounts</CommandName>
+            <CommandType>Powershell</CommandType>
+            <CommandString>powershell.exe -Command "Get-LocalUser | Select-Object Name"</CommandString>
+        </Command>
+    </Commands>
+</Plugin>
