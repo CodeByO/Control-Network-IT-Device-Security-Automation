@@ -378,14 +378,13 @@ class InspectionListPage(QWidget):
         self.tableWidget.setItem(rowPosition, 2, QTableWidgetItem(description))
         self.tableWidget.setItem(rowPosition, 3, QTableWidgetItem(tool))
         self.tableWidget.setItem(rowPosition, 4, QTableWidgetItem(action))
-        
         # 삭제 버튼 추가
         btnDelete = QPushButton("삭제")
         btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
         self.tableWidget.setCellWidget(rowPosition, 5, btnDelete)
         self.tableWidget.setItem(rowPosition, 6, QTableWidgetItem(plugin))
         self.tableWidget.setColumnHidden(6, True)
-        self.tableWidget.setItem(rowPosition, 7, QTableWidgetItem(TargetID))
+        self.tableWidget.setItem(rowPosition, 7, QTableWidgetItem(str(TargetID)))
         self.tableWidget.setColumnHidden(7, True)
 
     # [Func] deleteRow
