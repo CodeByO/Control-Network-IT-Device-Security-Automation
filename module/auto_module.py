@@ -50,7 +50,7 @@ def ConnectTarget(ip:str, port:str, connection_type:str, username:str, password:
         try:
             ssh.connect(hostname=ip, username=username, password=password, port=port, timeout=5.0)
             return ssh
-        except (BadHostKeyException, AuthenticationException, OSError, NoValidConnectionsError, SSHException):
+        except (BadHostKeyException, AuthenticationException, OSError, NoValidConnectionsError, SSHException) as e:
             return None
     elif connection_type == "samba":
         conn = SMBConnection(username, password, 'auto_inspection', servername, 'WORKGROUP', use_ntlm_v2=True)
@@ -141,9 +141,8 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
         0(성공), 1(대상 접속 실패), 2(점검 실패), 3(데이터베이스 접속 에러) - 미확정
 
     '''
-    print(target_os, ip, port, connection_type, username, password, plugin_dict)
     session = ConnectTarget(target_os, ip, port, connection_type, username, password)
-    
+    print(type(session))
     # 예시, 원격 연결에 문제가 생겼다면 1, 점검에 문제가 발생하면 2
     if session is None:
         return 1
@@ -158,7 +157,11 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
     else:
         return 3
     inspection_lists = ParseXml(connection_type, plugin_dict)
+    print(inspection_lists)
     cursor = con.cursor()
+    inspection_items_data = (target_os, connection_type, ip, int(port), username)
+    cursor.execute("INSERT INTO InspectionItems(OSType, ConnectionType, IPAddress, PortNumber, RemoteID) VALUES(?,?,?,?,?)", inspection_items_data)
+    items_id = cursor.lastrowid
     for command in tqdm(inspection_lists):
         plugin_name = command.get("PluginName")
         target_id = plugin_dict.get(plugin_name)
@@ -166,6 +169,9 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
         command_count = int(command.get("CommandCount"))
         command_type = command.get("CommandType")
         command_string = command.get("CommandString")
+        
+        print(f"start {plugin_name}")
+        
         for _ in range(command_count):
             if connection_type == "ssh":
                 stdin, stdout, stderr = session.exec_command(command_string)
@@ -183,11 +189,7 @@ def InspectionAutomation(target_os:str, ip:str, port:str, connection_type:str, u
                 inspection_status = 1
             else:
                 inspection_status = 0
-            
-        inspection_items_data = (target_os,connection_type, ip, int(port), username, target_id)
-        cursor.execute("INSERT INTO InspectionItems(OSType, ConnectionType, IPAddress, PortNumber, RemoteID, TargetID) VALUES(?,?,?,?,?,?)", inspection_items_data)
-        
-        items_id = cursor.lastrowid
+        print(inspection_date)
         inspection_results_data = (target_id, items_id, inspection_status, stdout, stderr, inspection_date)
         cursor.execute("INSERT INTO InspectionResults(TargetID, ItemsID, InspectionStatus, InspectionOutput, InspectionError, InspectionDate) VALUES(?,?,?,?,?,?)", inspection_results_data)
         con.commit()
