@@ -7,6 +7,7 @@
     <Info>Root 계정의 원격 접속 제한 설정</Info>
     <Description>Root 계정의 원격 접속을 제한하기 위해 SSH 설정 파일에 PermitRootLogin No를 추가</Description>
     <Commands>
+        <CommandCount>1</CommandCount>
         <Command>
             <CommandName>Set_Restrict_Root_Remote_Login</CommandName>
             <CommandType>Bash</CommandType>
