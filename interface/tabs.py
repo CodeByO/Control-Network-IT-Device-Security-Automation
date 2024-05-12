@@ -9,10 +9,10 @@ import sqlite3
 from pathlib import Path
 
 from PyQt5.QtWidgets import (QVBoxLayout, QComboBox, QLineEdit, QApplication, QMainWindow,
- QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget,
- QCheckBox, QTableWidget, QHeaderView, QHBoxLayout, QTableWidgetItem)
+ QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget, 
+ QCheckBox, QTableWidget, QHBoxLayout, QTableWidgetItem)
 from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtGui import QPainter, QTransform
+from PyQt5.QtGui import QPainter, QTransform, QFont
 
 sys.path.append(os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ))
 
@@ -76,7 +76,7 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         self.setWindowTitle('취약점 점검 시스템')
-        self.setGeometry(260, 150, 800, 500)
+        self.setGeometry(260, 150, 980, 700)  # 테이블 글자 짤림 현상때문에 크기를 키움
 
         self.stackedWidget = QStackedWidget()
         self.setCentralWidget(self.stackedWidget)
@@ -194,12 +194,12 @@ class MainPage(QWidget):
         :param id: ID
         :param password: Password
         """
-        # os_type = "Windows"
-        # connection_type = "SSH"
-        # ip = "192.168.0.1"
-        # port = "22"
-        # id = "admin"
-        # password = "password"
+        #os_type = "Windows"
+        #connection_type = "SSH"
+        #ip = "192.168.0.1"
+        #port = "22"
+        #id = "admin"
+        #password = "password"
 
         # 대상 OS가 선택되지 않았을 경우 경고 메시지 출력 후 종료
         if os_type == None or os_type == "대상 OS 선택":
@@ -247,6 +247,7 @@ class MainPage(QWidget):
             con = sqlite3.connect(path_database)
             cursor = con.cursor()
 
+            #db에서 내용불러오기
             try:
                 cursor.execute("SELECT TargetID, PluginName, Info, Description, CommandType, ResultType from InspectionTargets WHERE TargetOS=? AND DeleteFlag=0", (os_type, ))
             except (sqlite3.OperationalError, sqlite3.ProgrammingError):
@@ -286,15 +287,15 @@ class InspectionListPage(QWidget):
     # [ISSUE] None
     def __init__(self, stackedWidget):
         super(InspectionListPage, self).__init__()
-        
+
         self.stackedWidget = stackedWidget
         
         self.tableWidget = QTableWidget()
+
         self.tableWidget.setColumnCount(8)
         self.tableWidget.setHorizontalHeaderLabels(['선택', '이름', '설명', '실행 방식', '결과 방식', '삭제'])
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        
+
         self.os_type = None
         self.connection_type = None
         self.ip = None
@@ -303,6 +304,7 @@ class InspectionListPage(QWidget):
         self.password = None
         
         self.initUI()
+
     
     # [Func] initUI
     # [DESC] UI 초기화 메서드
@@ -334,7 +336,16 @@ class InspectionListPage(QWidget):
 
         # 버튼 레이아웃을 메인 레이아웃에 추가하여 정렬
         layout.addLayout(buttonLayout)
-            
+
+        # 열 너비 설정
+        self.tableWidget.setColumnWidth(0, 30)
+        self.tableWidget.setColumnWidth(1, 210)
+        self.tableWidget.setColumnWidth(2, 450)
+        self.tableWidget.setColumnWidth(3, 90)
+        self.tableWidget.setColumnWidth(4, 80)
+        self.tableWidget.setColumnWidth(5, 30)
+
+
     # [Func] goBack
     # [DESC] 뒤로 가기 버튼 클릭 이벤트 핸들러
     # [TODO] None
@@ -386,6 +397,13 @@ class InspectionListPage(QWidget):
         self.tableWidget.setColumnHidden(6, True)
         self.tableWidget.setItem(rowPosition, 7, QTableWidgetItem(str(TargetID)))
         self.tableWidget.setColumnHidden(7, True)
+        
+        # 글자 크기 조절
+        for column in range(self.tableWidget.columnCount()):
+            item = self.tableWidget.item(rowPosition, column)
+            if item is not None:
+                item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
+                item.setTextAlignment(Qt.AlignCenter)
 
     # [Func] deleteRow
     # [DESC] 선택한 행을 삭제하는 메서드
