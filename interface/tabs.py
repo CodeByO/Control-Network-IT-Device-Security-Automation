@@ -9,8 +9,9 @@ import sqlite3
 from pathlib import Path
 
 from PyQt5.QtWidgets import (QVBoxLayout, QComboBox, QLineEdit, QApplication, QMainWindow,
- QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget, 
- QCheckBox, QTableWidget, QHBoxLayout, QTableWidgetItem)
+ QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget, QDialog, QLabel,
+ QCheckBox, QTableWidget, QHBoxLayout, QTableWidgetItem, QSpinBox, QTextEdit, QScrollArea,
+ QHeaderView)
 from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtGui import QPainter, QTransform, QFont
 
@@ -173,13 +174,6 @@ class MainPage(QWidget):
         layout.addWidget(nextButton, alignment=Qt.AlignRight)
         return vulnerability_check_tab
 
-    # [Func] create_inspection_history_tab
-    # [DESC] 점검 이력 조회 탭을 생성하는 메서드
-    # [TODO] 구현해야 함
-    # [ISSUE] None
-    def create_inspection_history_tab(self):
-        return QWidget()
-
     # [Func] on_next_button_clicked
     # [DESC] 다음 버튼 클릭 이벤트 핸들러
     # [TODO] None
@@ -278,6 +272,192 @@ class MainPage(QWidget):
         msgBox.setWindowTitle("경고")
         msgBox.setStandardButtons(QMessageBox.Ok)
         msgBox.exec_()
+        
+    # [Func] create_inspection_history_tab
+    # [DESC] 점검 이력 조회 탭을 생성하는 메서드
+    # [TODO] 검색, 필터링 기능 구현
+    # [ISSUE] None
+    def create_inspection_history_tab(self):
+        inspection_history_tab = QWidget()
+        layout = QVBoxLayout(inspection_history_tab)
+
+        topLayout = QHBoxLayout() # 상단 필터 및 검색 영역
+        topLayout.addStretch(1)
+        
+        filter = QComboBox() # 필터링 드롭다운
+        filter.addItem("전체")
+        filter.addItem("Windows")
+        filter.addItem("Linux")
+        filter.setPlaceholderText("대상 OS 필터")
+        filter.setFixedWidth(200)
+        topLayout.addWidget(filter)
+
+        search = QLineEdit() # 검색 필드
+        search.setPlaceholderText("IP 주소 검색")
+        search.setFixedWidth(200)
+        topLayout.addWidget(search)
+
+        layout.addLayout(topLayout)
+
+        self.table = QTableWidget() # 테이블 생성
+        self.table.setColumnCount(4) 
+        self.table.setHorizontalHeaderLabels(["날짜", "대상 OS", "IP 주소", "상세 결과"])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.setSortingEnabled(True) # 정렬 기능 활성화
+
+        layout.addWidget(self.table)
+
+        self.LoadRecord() # 이력 불러오기
+
+        return inspection_history_tab
+       
+    # [Func] LoadRecord
+    # [DESC] 점검 이력을 불러오는 메서드
+    # [TODO] db 연결
+    # [ISSUE] None
+    def LoadRecord(self):
+        # 예시 데이터
+        data = [
+            {"date": "2024-01-01", "os": "Windows", "ip": "192.168.0.1"},
+            {"date": "2024-01-02", "os": "Linux", "ip": "192.168.0.2"}
+        ]
+    
+        for record in data:
+            row_position = self.table.rowCount()
+            self.table.insertRow(row_position)
+        
+            # 날짜, 대상 OS, IP 주소 데이터 삽입
+            self.table.setItem(row_position, 0, QTableWidgetItem(record['date']))
+            self.table.setItem(row_position, 1, QTableWidgetItem(record['os']))
+            self.table.setItem(row_position, 2, QTableWidgetItem(record['ip']))
+        
+            detail_result_btn = QPushButton('상세 결과') # '상세 결과' 버튼
+            detail_result_btn.clicked.connect(lambda _, row=row_position: self.DetailResult(row))
+        
+            widget = QWidget() # 상세 결과 버튼 테이블에 배치
+            btn_layout = QHBoxLayout(widget)
+            btn_layout.addWidget(detail_result_btn)
+            btn_layout.setAlignment(Qt.AlignCenter)
+            btn_layout.setContentsMargins(0, 0, 0, 0)
+            widget.setLayout(btn_layout)
+        
+            self.table.setCellWidget(row_position, 3, widget)
+            
+    # [Func] DetailResult
+    # [DESC] 선택한 점검 이력의 상세 결과를 불러옴
+    # [TODO] db 연결
+    # [ISSUE] None      
+    def DetailResult(self, row):
+        # 선택된 행의 데이터 가져오기
+        date = self.table.item(row, 0).text()  # 날짜
+        os = self.table.item(row, 1).text()    # OS
+        ip = self.table.item(row, 2).text()    # IP 주소
+
+        dialog = QDialog(self) # 상세 결과 창
+        dialog.setWindowTitle("상세 결과")
+        dialog.resize(800, 600)
+        layout = QVBoxLayout()
+
+        header_label = QLabel(f"{date} | {os} | {ip}  점검 상세 결과") # 선택한 점검 이력의 정보 표시
+        layout.addWidget(header_label)
+
+        # 상세 점검 결과 테이블
+        self.detail_table = QTableWidget()
+        self.detail_table.setColumnCount(5)
+        self.detail_table.setHorizontalHeaderLabels(["점검 항목", "점검 내용", "결과 방식", "점검 결과", "세부 내용"])
+        self.detail_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+    
+        # 예시 데이터
+        data = [
+            {"info": "백신 프로그램 업데이트", "description": "Windows Defender 백신 프로그램을 업데이트 합니다.", "result_type": "action", "result": "안전", "detail": True},
+            {"info": "계정 잠금 임계값 변경", "description": "계정 잠금 임계값을 5로 설정", "result_type": "action", "result": "취약", "detail": True}
+        ]
+    
+        for record in data:
+            row_position = self.detail_table.rowCount()
+            self.detail_table.insertRow(row_position)
+        
+            # 데이터 삽입
+            self.detail_table.setItem(row_position, 0, QTableWidgetItem(record['info']))
+            self.detail_table.setItem(row_position, 1, QTableWidgetItem(record['description']))
+            self.detail_table.setItem(row_position, 2, QTableWidgetItem(record['result_type']))
+            self.detail_table.setItem(row_position, 3, QTableWidgetItem(record['result']))
+        
+            detail_btn = QPushButton('세부 내용') # 세부 내용 버튼 배치
+            detail_btn.clicked.connect(lambda _, row=row_position: self.ItemDetails(row))
+
+            widget = QWidget()
+            btn_layout = QHBoxLayout(widget)
+            btn_layout.addWidget(detail_btn)
+            btn_layout.setAlignment(Qt.AlignCenter)
+            btn_layout.setContentsMargins(0, 0, 0, 0)
+            widget.setLayout(btn_layout)
+
+            self.detail_table.setCellWidget(row_position, 4, widget)
+
+
+        layout.addWidget(self.detail_table)
+
+        dialog.setLayout(layout)
+        dialog.exec_()
+        
+    # [Func] ItemDetails
+    # [DESC] 점검 항목의 세부 내용을 보여줌
+    # [TODO] db 연결
+    # [ISSUE] None    
+    def ItemDetails(self, row):
+        # 선택된 행의 데이터 가져오기
+        info = self.detail_table.item(row, 0).text()  # 점검 항목
+        description = self.detail_table.item(row, 1).text()     # 점검 내용
+        result_type = self.detail_table.item(row, 2).text() # 결과 방식
+        result = self.detail_table.item(row, 3).text()      # 점검 결과
+
+        detail_dialog = QDialog(self)  # 세부 내용 창
+        detail_dialog.setWindowTitle("세부 내용")
+        detail_dialog.resize(800, 600)
+        layout = QVBoxLayout()
+
+        # 점검 항목
+        info_label = QLabel("점검 항목")
+        info_content = QLineEdit()
+        info_content.setText(info)
+        info_content.setReadOnly(True)
+        layout.addWidget(info_label)
+        layout.addWidget(info_content)
+
+        # 점검 내용
+        description_label = QLabel("점검 내용")
+        description_content = QLineEdit()
+        description_content.setText(description)
+        description_content.setReadOnly(True)
+        layout.addWidget(description_label)
+        layout.addWidget(description_content)
+
+        # 결과 방식
+        result_type_label = QLabel("결과 방식")
+        result_type_content = QLineEdit()
+        result_type_content.setText(result_type)
+        result_type_content.setReadOnly(True)
+        layout.addWidget(result_type_label)
+        layout.addWidget(result_type_content)
+
+        # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
+        for label_text in ["CommandName", "CommandType", "CommandString", "출력 메시지"]:
+            label = QLabel(label_text)
+            content = QLineEdit()
+            layout.addWidget(label)
+            layout.addWidget(content)
+
+        # 점검 결과
+        result_label = QLabel("점검 결과")
+        result_content = QLineEdit()
+        result_content.setText(result)
+        result_content.setReadOnly(True)
+        layout.addWidget(result_label)
+        layout.addWidget(result_content)
+
+        detail_dialog.setLayout(layout)
+        detail_dialog.exec_()
 
 class InspectionListPage(QWidget):
 
@@ -313,6 +493,15 @@ class InspectionListPage(QWidget):
     def initUI(self):
         layout = QVBoxLayout()
         self.setLayout(layout)
+        
+        top_btn_layout = QHBoxLayout() # 버튼 레이아웃 생성
+        top_btn_layout.addStretch() # 버튼 오른쪽 정렬
+        add_btn = QPushButton("+") # '+' 버튼 생성 및 버튼 레이아웃에 설정
+        add_btn.setFixedSize(30, 30)
+        add_btn.clicked.connect(self.AddInspectionList) # 규제 지침 등록 창 열기
+        top_btn_layout.addWidget(add_btn)
+        layout.addLayout(top_btn_layout)
+        
         layout.addWidget(self.tableWidget)
 
         # 버튼 레이아웃 생성
@@ -344,8 +533,58 @@ class InspectionListPage(QWidget):
         self.tableWidget.setColumnWidth(3, 90)
         self.tableWidget.setColumnWidth(4, 80)
         self.tableWidget.setColumnWidth(5, 30)
+        
+    # [Func] AddInspectionList
+    # [DESC] 규제 지침 등록 화면
+    # [TODO] db 연결, 저장 시 xml 파일 생성 기능 구현
+    # [ISSUE] None        
+    def AddInspectionList(self):
+        self.dialog = QDialog(self)
+        self.dialog.setWindowTitle("규제 지침 등록")
+        self.dialog.resize(600, 600)
 
+        layout = QVBoxLayout()
+        self.dialog.setLayout(layout)
 
+        fields = ["PluginName", "TargetOS", "Result_Type", "Info", "Description", "CommandCount", "CommandName",
+                  "CommandType", "CommandString"]
+        input_types = [QLineEdit, QComboBox, QComboBox, QLineEdit, QTextEdit, QSpinBox, QLineEdit, QComboBox, QTextEdit]  # Description, CommandString을 QTextEdit로 변경
+
+        options = {
+            "TargetOS": ["Windows", "Linux"],
+            "Result_Type": ["action", "info", "registry"],
+            "CommandType": ["Powershell", "cmd", "Bash"]
+        }
+
+        for field, input_type in zip(fields, input_types):
+            label = QLabel(field)
+            if input_type == QTextEdit:  # TextEdit인 경우
+                input_field = QScrollArea()  # 스크롤
+                text_edit = QTextEdit()
+                text_edit.setAcceptRichText(False)
+                text_edit.setMinimumHeight(200)
+                input_field.setWidget(text_edit)
+                input_field.setWidgetResizable(True)
+            else:
+                input_field = input_type()
+                if isinstance(input_field, QComboBox):
+                    if field in options:
+                        for option in options[field]:
+                            input_field.addItem(option)
+            layout.addWidget(label)
+            layout.addWidget(input_field)
+
+        btn_layout = QHBoxLayout()  # 버튼 레이아웃
+        btn_layout.addStretch()
+        save_btn = QPushButton('저장')  # '저장' 버튼 추가
+        save_btn.setFixedSize(40, 30)
+        btn_layout.addWidget(save_btn)
+        btn_layout.addStretch()
+
+        layout.addLayout(btn_layout)
+
+        self.dialog.exec_()
+        
     # [Func] goBack
     # [DESC] 뒤로 가기 버튼 클릭 이벤트 핸들러
     # [TODO] None
