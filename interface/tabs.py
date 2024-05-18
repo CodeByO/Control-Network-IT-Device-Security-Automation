@@ -1077,14 +1077,14 @@ class InspectionProgressPage(QWidget):
     # [TODO] None
     # [ISSUE] None        
     def goBack(self):
-        self.progressTable.clearContents()
-        self.progressTable.setRowCount(0)
+        self.progress_table.clearContents()
+        self.progress_table.setRowCount(0)
         self.stackedWidget.setCurrentIndex(1)  # 점검 항목 선택 페이지로 돌아가기 
     
     
     def returnToHome(self):
-        self.progressTable.clearContents()
-        self.progressTable.setRowCount(0)
+        self.progress_table.clearContents()
+        self.progress_table.setRowCount(0)
         self.stackedWidget.setCurrentIndex(0) # 점검 대상 등록 페이지로 돌아가기
     
     # [Func] cancelInspection
