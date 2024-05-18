@@ -240,7 +240,9 @@ class MainPage(QWidget):
     # [TODO] None
     # [ISSUE] None
     def add_target_button_clicked(self, target_name, os_type, connection_type, ip, port, id, password):
-        
+        if target_name in self.input_target_lists:
+            self.ShowAlert("이미 해당 시스템 장치명을 가진 점검 대상이 존재합니다.")
+            return
          # 대상 OS가 선택되지 않았을 경우 경고 메시지 출력 후 종료
         if os_type == None or os_type == "대상 OS 선택":
             self.ShowAlert("점검할 OS를 선택해 주세요")
@@ -312,6 +314,7 @@ class MainPage(QWidget):
         if len(self.input_target_lists) == 0:
             self.ShowAlert("최소 한개 이상의 점검 대상을 추가해 주세요.")
             return 
+        
         global windows_inspection_targets
         global linux_inspection_targets
         if len(windows_inspection_targets) == 0 or len(linux_inspection_targets) == 0:
@@ -343,8 +346,12 @@ class MainPage(QWidget):
         
         self.inspection_list_page.SetData(windows_inspection_targets, linux_inspection_targets)
         self.inspection_list_page.SetTarget(self.input_target_lists)
+        for i in range(self.stackedWidget.count()):
+            if self.stackedWidget.widget(i) == self.inspection_list_page:
+                # 스택에 페이지가 이미 존재할 경우 그냥 이동
+                self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_list_page))
         self.stackedWidget.addWidget(self.inspection_list_page)
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_list_page))
         
         #self.ShowAlert("규제 지침 선택 화면으로 넘어가는 로직 구현")
 
@@ -630,7 +637,7 @@ class InspectionListPage(QWidget):
         
     # [Func] AddInspectionList
     # [DESC] 규제 지침 등록 화면
-    # [TODO] db 연결, 저장 시 xml 파일 생성 기능 구현
+    # [TODO] 예외 처리
     # [ISSUE] None        
     def AddInspectionList(self):
         self.dialog = QDialog(self)
@@ -819,16 +826,27 @@ class InspectionListPage(QWidget):
             chkBox = chkBoxWidget.findChild(QCheckBox)
             if chkBox.isChecked():
                 selected_targets_list.append(self.target_lists[row])
+                
+        if len(selected_targets_list) == 0:
+            self.ShowAlert("최소한 하나의 점검 대상을 선택해 주세요")
+            return
         for row in range(self.inspection_list_table.rowCount()):
             chkBoxWidget = self.inspection_list_table.cellWidget(row, 0)
             chkBox = chkBoxWidget.findChild(QCheckBox)
             if chkBox.isChecked():
                 plugin_dict[self.inspection_list_table.item(row, 7).text()] = [self.inspection_list_table.item(row, 1).text() ,int(self.inspection_list_table.item(row, 8).text())]
         
-        
+        if len(plugin_dict) == 0:
+            self.ShowAlert("최소한 하나의 규제 지침을 선택해 주세요")
+            return 
         self.inspection_progress_page.setInspectionData(selected_targets_list, plugin_dict)
+        for i in range(self.stackedWidget.count()):
+            if self.stackedWidget.widget(i) == self.inspection_progress_page:
+                self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_progress_page))
+                self.inspection_progress_page.runInspection()
+        
         self.stackedWidget.addWidget(self.inspection_progress_page)
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_progress_page))
         self.inspection_progress_page.runInspection()
         #InspectionAutomation(self.os_type, self.ip, self.port, self.connection_type, self.id, self.password, plugin_dict)
         
