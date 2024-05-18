@@ -88,6 +88,7 @@ class MainWindow(QMainWindow):
 
         self.stackedWidget.addWidget(self.mainPage)
         
+        
 # [CLASS] MainPage
 # [DESC] 메인 페이지 클래스
 # [TODO] None
@@ -106,6 +107,7 @@ class MainPage(QWidget):
         """
         super().__init__()
         self.input_target_lists = list()
+        self.inspection_results_list = list()
         self.os_type = None
         self.connection_type = None
         self.stackedWidget = stackedWidget
@@ -392,14 +394,14 @@ class MainPage(QWidget):
         topLayout.addWidget(search)
 
         layout.addLayout(topLayout)
-
-        self.table = QTableWidget() # 테이블 생성
-        self.table.setColumnCount(4) 
-        self.table.setHorizontalHeaderLabels(["날짜", "대상 OS", "IP 주소", "상세 결과"])
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table.setSortingEnabled(True) # 정렬 기능 활성화
-        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        layout.addWidget(self.table)
+        
+        self.history_table = QTableWidget() # 테이블 생성
+        self.history_table.setColumnCount(5) 
+        self.history_table.setHorizontalHeaderLabels(["날짜", "시스템 장치명", "대상 OS", "IP 주소", "상세 결과"])
+        self.history_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.history_table.setSortingEnabled(True) # 정렬 기능 활성화
+        self.history_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        layout.addWidget(self.history_table)
 
         self.LoadRecord() # 이력 불러오기
 
@@ -407,45 +409,102 @@ class MainPage(QWidget):
 
     # [Func] LoadRecord
     # [DESC] 점검 이력을 불러오는 메서드
-    # [TODO] db 연결
+    # [TODO] 에러 테스트
     # [ISSUE] None
     def LoadRecord(self):
-        # 예시 데이터
-        data = [
-            {"date": "2024-01-01", "os": "Windows", "ip": "192.168.0.1"},
-            {"date": "2024-01-02", "os": "Linux", "ip": "192.168.0.2"}
-        ]
-    
-        for record in data:
-            row_position = self.table.rowCount()
-            self.table.insertRow(row_position)
         
+        global path_database
+        
+        if not os.path.exists(path_database):
+            self.ShowAlert("DB가 존재하지 않습니다.")
+            return 
+
+        con = sqlite3.connect(path_database)
+        cursor = con.cursor()
+
+        #db에서 내용불러오기
+        try:
+            cursor.execute("SELECT * FROM InspectionResults")
+        except (sqlite3.OperationalError, sqlite3.ProgrammingError):
+            self.ShowAlert("DB 실행 에러")
+            return 
+
+        inspection_result_list = cursor.fetchall()
+        if len(inspection_result_list) != 0:
+            self.result_dict = dict()
+            for result in inspection_result_list:
+                items_id = result[2]
+                if items_id not in self.result_dict:
+                    self.result_dict[items_id] = {
+                        "items" : [],
+                        "targets": [],
+                        "date": result[6].split()[0]
+                    }
+                self.result_dict[items_id]["targets"].append({result[1]: [result[3], result[4],  result[5]]})
+            for item in self.result_dict.keys():
+                try:
+                    cursor.execute("SELECT * from InspectionItems WHERE ItemsID=?",(item,))
+                except (sqlite3.OperationalError, sqlite3.ProgrammingError):
+                    self.ShowAlert("DB 실행 에러")
+                    return
+                self.result_dict[item]["items"] = list(cursor.fetchone())
+                target_result = dict()
+                for target in self.result_dict[item]["targets"]:
+                    for target_id, value in target.items():
+                        try:
+                            cursor.execute("SELECT Info, Description, ResultType, CommandName, CommandType, CommandString  from InspectionTargets WHERE TargetID=?",(target_id,))
+                        except (sqlite3.OperationalError, sqlite3.ProgrammingError):
+                            self.ShowAlert("DB 실행 에러")
+                            return
+                        target_select_list = list(cursor.fetchone())
+                        new_value = [target_select_list[i] for i in range(1, len(target_select_list))] + value
+                        target_result[target_select_list[0]] = new_value
+                
+                self.result_dict[item]["targets"] = target_result
+        
+        con.close()
+        
+        for item_id, item_data in self.result_dict.items():
             # 날짜, 대상 OS, IP 주소 데이터 삽입
-            self.table.setItem(row_position, 0, QTableWidgetItem(record['date']))
-            self.table.setItem(row_position, 1, QTableWidgetItem(record['os']))
-            self.table.setItem(row_position, 2, QTableWidgetItem(record['ip']))
-        
-            detail_result_btn = QPushButton('상세 결과') # '상세 결과' 버튼
-            detail_result_btn.clicked.connect(lambda _, row=row_position: self.DetailResult(row))
-        
-            widget = QWidget() # 상세 결과 버튼 테이블에 배치
+            row_position = self.history_table.rowCount()
+            self.history_table.insertRow(row_position)
+            self.history_table.setItem(row_position, 0, QTableWidgetItem(item_data['date']))  # 날짜
+            self.history_table.setItem(row_position, 1, QTableWidgetItem(item_data['items'][1]))  # 장치 이름
+            self.history_table.setItem(row_position, 2, QTableWidgetItem(item_data['items'][2]))  # 대상 OS
+            self.history_table.setItem(row_position, 3, QTableWidgetItem(item_data['items'][4]))  # IP 주소
+            
+            
+
+            # '상세 결과' 버튼 추가
+            detail_result_btn = QPushButton('상세 결과')
+            detail_result_btn.clicked.connect(lambda _, row=row_position: self.DetailResult(row, item_data['targets']))
+
+            widget = QWidget()
             btn_layout = QHBoxLayout(widget)
             btn_layout.addWidget(detail_result_btn)
             btn_layout.setAlignment(Qt.AlignCenter)
             btn_layout.setContentsMargins(0, 0, 0, 0)
             widget.setLayout(btn_layout)
-        
-            self.table.setCellWidget(row_position, 3, widget)
+
+            self.history_table.setCellWidget(row_position, 4, widget)
+            
+            # 글자 크기 조절
+            for column in range(self.history_table.columnCount()):
+                item = self.history_table.item(row_position, column)
+                if item is not None:
+                    item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
+                    item.setTextAlignment(Qt.AlignCenter)
+
             
     # [Func] DetailResult
     # [DESC] 선택한 점검 이력의 상세 결과를 불러옴
-    # [TODO] db 연결
+    # [TODO] 에러 테스트
     # [ISSUE] None      
-    def DetailResult(self, row):
+    def DetailResult(self, row, targets_data):
         # 선택된 행의 데이터 가져오기
-        date = self.table.item(row, 0).text()  # 날짜
-        os = self.table.item(row, 1).text()    # OS
-        ip = self.table.item(row, 2).text()    # IP 주소
+        date = self.history_table.item(row, 0).text()  # 날짜
+        os = self.history_table.item(row, 1).text()    # OS
+        ip = self.history_table.item(row, 2).text()    # IP 주소
 
         dialog = QDialog(self) # 상세 결과 창
         dialog.setWindowTitle("상세 결과")
@@ -460,25 +519,25 @@ class MainPage(QWidget):
         self.detail_table.setColumnCount(5)
         self.detail_table.setHorizontalHeaderLabels(["점검 항목", "점검 내용", "결과 방식", "점검 결과", "세부 내용"])
         self.detail_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-    
-        # 예시 데이터
-        data = [
-            {"info": "백신 프로그램 업데이트", "description": "Windows Defender 백신 프로그램을 업데이트 합니다.", "result_type": "action", "result": "안전", "detail": True},
-            {"info": "계정 잠금 임계값 변경", "description": "계정 잠금 임계값을 5로 설정", "result_type": "action", "result": "취약", "detail": True}
-        ]
-    
-        for record in data:
+        self.detail_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        # 테이블 초기화
+        self.detail_table.setRowCount(0)
+
+        # self.result_dict 순회하며 테이블에 데이터 추가
+        for target_id, target_info in targets_data.items():
+            # 세부 내용 데이터 추가
             row_position = self.detail_table.rowCount()
             self.detail_table.insertRow(row_position)
-        
+
             # 데이터 삽입
-            self.detail_table.setItem(row_position, 0, QTableWidgetItem(record['info']))
-            self.detail_table.setItem(row_position, 1, QTableWidgetItem(record['description']))
-            self.detail_table.setItem(row_position, 2, QTableWidgetItem(record['result_type']))
-            self.detail_table.setItem(row_position, 3, QTableWidgetItem(record['result']))
-        
-            detail_btn = QPushButton('세부 내용') # 세부 내용 버튼 배치
-            detail_btn.clicked.connect(lambda _, row=row_position: self.ItemDetails(row))
+            self.detail_table.setItem(row_position, 0, QTableWidgetItem(target_id))
+            self.detail_table.setItem(row_position, 1, QTableWidgetItem(target_info[0]))  # 설명
+            self.detail_table.setItem(row_position, 2, QTableWidgetItem(target_info[1]))  # 결과 유형
+            self.detail_table.setItem(row_position, 3, QTableWidgetItem(target_info[5]))  # 결과
+
+            # 세부 내용 버튼 추가
+            detail_btn = QPushButton('세부 내용')
+            detail_btn.clicked.connect(lambda _, row=row_position: self.ItemDetails(row, target_info))
 
             widget = QWidget()
             btn_layout = QHBoxLayout(widget)
@@ -488,6 +547,7 @@ class MainPage(QWidget):
             widget.setLayout(btn_layout)
 
             self.detail_table.setCellWidget(row_position, 4, widget)
+                        
 
 
         layout.addWidget(self.detail_table)
@@ -497,15 +557,16 @@ class MainPage(QWidget):
         
     # [Func] ItemDetails
     # [DESC] 점검 항목의 세부 내용을 보여줌
-    # [TODO] db 연결
+    # [TODO] 에러 테스트
     # [ISSUE] None    
-    def ItemDetails(self, row):
+    def ItemDetails(self, row, target_info):
         # 선택된 행의 데이터 가져오기
         info = self.detail_table.item(row, 0).text()  # 점검 항목
         description = self.detail_table.item(row, 1).text()     # 점검 내용
         result_type = self.detail_table.item(row, 2).text() # 결과 방식
         result = self.detail_table.item(row, 3).text()      # 점검 결과
-
+        
+        
         detail_dialog = QDialog(self)  # 세부 내용 창
         detail_dialog.setWindowTitle("세부 내용")
         detail_dialog.resize(800, 600)
@@ -536,9 +597,11 @@ class MainPage(QWidget):
         layout.addWidget(result_type_content)
 
         # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
-        for label_text in ["CommandName", "CommandType", "CommandString", "출력 메시지"]:
+        for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], [target_info[i] for i in [2, 3, 4, 6, 7]]):
             label = QLabel(label_text)
             content = QLineEdit()
+            content.setText(content_text)
+            content.setReadOnly
             layout.addWidget(label)
             layout.addWidget(content)
 
