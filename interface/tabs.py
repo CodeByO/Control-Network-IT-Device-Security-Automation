@@ -11,7 +11,8 @@ from pathlib import Path
 from PyQt5.QtWidgets import (QVBoxLayout, QRadioButton, QComboBox, QLineEdit, QApplication, QMainWindow,
  QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget, QDialog, QLabel,
  QCheckBox, QTableWidget, QHBoxLayout, QTableWidgetItem, QSpinBox, QTextEdit, QScrollArea,
- QHeaderView, QAbstractItemView, QGridLayout, QProgressBar, QGroupBox)
+ QHeaderView, QAbstractItemView, QGridLayout, QProgressBar, QGroupBox, QStyledItemDelegate)
+from PyQt5.QtCore import Qt
 from PyQt5.QtCore import Qt, QRect, pyqtSlot
 from PyQt5.QtGui import QPainter, QTransform, QFont
 
@@ -77,7 +78,7 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         self.setWindowTitle('취약점 점검 시스템')
-        self.setGeometry(260, 150, 980, 700)  # 테이블 글자 짤림 현상때문에 크기를 키움
+        self.setGeometry(260, 150, 1015, 700)  # 테이블 글자 짤림 현상때문에 크기를 키움
 
         self.stackedWidget = QStackedWidget()
         self.setCentralWidget(self.stackedWidget)
@@ -179,13 +180,14 @@ class MainPage(QWidget):
         
         input_layout.addWidget(connection_type_group_box, 1, 1)
 
-        port_line_edit = QLineEdit()
-        port_line_edit.setPlaceholderText("포트 번호")
-        input_layout.addWidget(port_line_edit, 2, 0)
-
         id_line_edit = QLineEdit()
         id_line_edit.setPlaceholderText("ID")
-        input_layout.addWidget(id_line_edit, 2, 1)
+        input_layout.addWidget(id_line_edit, 2, 0)
+
+
+        port_line_edit = QLineEdit()
+        port_line_edit.setPlaceholderText("포트 번호")
+        input_layout.addWidget(port_line_edit, 2, 1)
 
         password_line_edit = QLineEdit()
         password_line_edit.setEchoMode(QLineEdit.Password)
@@ -206,18 +208,25 @@ class MainPage(QWidget):
         self.target_lists_table.setHorizontalHeaderLabels(['시스템 장치명', 'OS', '접속 방식', 'IP 주소', '삭제'])
         self.target_lists_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.target_lists_table.horizontalHeader().setStretchLastSection(True)
-        
+
+        # 각 열 너비 조정
+        self.target_lists_table.setColumnWidth(0, 170)  # 시스템 장치명 열 너비
+        self.target_lists_table.setColumnWidth(1, 170)  # OS 열 너비
+        self.target_lists_table.setColumnWidth(2, 200)  # 접속 방식 열 너비
+        self.target_lists_table.setColumnWidth(3, 200)  # IP 주소 열 너비
+        self.target_lists_table.setColumnWidth(4, 40)   # 삭제 열 너비
+
         self.main_layout.addWidget(self.target_lists_table)
         
         next_button = QPushButton(">")
         next_button.setFixedSize(30, 30)
         next_button.clicked.connect(lambda: self.on_next_button_clicked())
         input_layout.addWidget(next_button, 4, 1, Qt.AlignRight)
+        
 
         # 입력칸들을 포함하는 레이아웃을 메인 레이아웃에 추가
         self.main_layout.addLayout(input_layout)
 
-        
         return vulnerability_check_tab
     
     @pyqtSlot()
@@ -233,6 +242,7 @@ class MainPage(QWidget):
             self.connection_type = "SSH"
         elif self.connection_type_samba.isChecked():
             self.connection_type = "Samba"
+
     # [Func] add_target_button_clicked
     # [DESC] 점검 대상 추가 버튼 클릭 이벤트 핸들러
     # [TODO] None
@@ -266,12 +276,13 @@ class MainPage(QWidget):
         self.target_lists_table.setItem(rowPosition, 1, QTableWidgetItem(os_type))
         self.target_lists_table.setItem(rowPosition, 2, QTableWidgetItem(connection_type))
         self.target_lists_table.setItem(rowPosition, 3, QTableWidgetItem(ip))
+
         # 삭제 버튼 추가
         btnDelete = QPushButton("삭제")
         btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
         self.target_lists_table.setCellWidget(rowPosition, 4, btnDelete)
         
-                # 글자 크기 조절
+        # 글자 크기 조절
         for column in range(self.target_lists_table.columnCount()):
             item = self.target_lists_table.item(rowPosition, column)
             if item is not None:
@@ -542,6 +553,12 @@ class MainPage(QWidget):
         detail_dialog.setLayout(layout)
         detail_dialog.exec_()
 
+class CenterAlignDelegate(QStyledItemDelegate):
+    def initStyleOption(self, option, index):
+        super(CenterAlignDelegate, self).initStyleOption(option, index)
+        option.displayAlignment = Qt.AlignCenter
+
+
 class InspectionListPage(QWidget):
     
 
@@ -562,14 +579,13 @@ class InspectionListPage(QWidget):
         self.inspection_target_table.setHorizontalHeaderLabels(['선택', '시스템 장치명', 'OS', '접속 방식', 'IP 주소'])
         self.inspection_target_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.inspection_target_table.horizontalHeader().setStretchLastSection(True)
-        
+        self.inspection_target_table.setItemDelegate(CenterAlignDelegate(self))  # 중앙 정렬 델리게이트 설정
         
         self.inspection_list_table.setColumnCount(9)
         self.inspection_list_table.setHorizontalHeaderLabels(['선택', '운영체제', '이름', '설명', '실행 방식', '결과 방식', '삭제'])
         self.inspection_list_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.inspection_list_table.horizontalHeader().setStretchLastSection(True)
 
-        
         self.initUI()
 
     
@@ -581,14 +597,15 @@ class InspectionListPage(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
         
-
-        
         layout.addWidget(self.inspection_target_table)
         
         layout.addWidget(self.inspection_list_table)
 
+        # inspection_list_table 정렬 설정 
+        self.inspection_list_table.horizontalHeader().setDefaultAlignment(Qt.AlignHCenter)
+        self.inspection_list_table.verticalHeader().setDefaultAlignment(Qt.AlignVCenter)
 
-        
+            
         # 버튼 레이아웃 생성
         buttonLayout = QHBoxLayout()
         
@@ -605,9 +622,10 @@ class InspectionListPage(QWidget):
         
         # "규제 항목 추가" 버튼 생성 및 버튼 레이아웃에 설정
         add_btn = QPushButton("규제항목 추가") # '+' 버튼 생성 및 버튼 레이아웃에 설정
-        add_btn.setFixedSize(30, 30)
+        add_btn.setFixedSize(120, 30)
         add_btn.clicked.connect(self.AddInspectionList) # 규제 지침 등록 창 열기
         buttonLayout.addWidget(add_btn)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
+
         # 버튼을 가운데로 정렬하기 위해 빈 공간 추가
         buttonLayout.addStretch()
         buttonLayout.addWidget(executeButton)
@@ -617,12 +635,13 @@ class InspectionListPage(QWidget):
         layout.addLayout(buttonLayout)
 
         # 열 너비 설정
-        self.inspection_list_table.setColumnWidth(0, 30)
-        self.inspection_list_table.setColumnWidth(1, 210)
-        self.inspection_list_table.setColumnWidth(2, 450)
-        self.inspection_list_table.setColumnWidth(3, 90)
+        self.inspection_list_table.setColumnWidth(0, 20)
+        self.inspection_list_table.setColumnWidth(1, 70)
+        self.inspection_list_table.setColumnWidth(2, 200)
+        self.inspection_list_table.setColumnWidth(3, 440)
         self.inspection_list_table.setColumnWidth(4, 80)
-        self.inspection_list_table.setColumnWidth(5, 30)
+        self.inspection_list_table.setColumnWidth(5, 75)
+        self.inspection_list_table.setColumnWidth(6, 10)
         
     # [Func] AddInspectionList
     # [DESC] 규제 지침 등록 화면
@@ -736,7 +755,8 @@ class InspectionListPage(QWidget):
             item = self.inspection_list_table.item(rowPosition, column)
             if item is not None:
                 item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
-                item.setTextAlignment(Qt.AlignCenter)    
+                
+                   
     # [Func] addInspectionListRow
     # [DESC] 테이블에 새로운 행 추가
     # [TODO] None
@@ -997,4 +1017,4 @@ def main():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    main()
+    main()  
