@@ -7,12 +7,12 @@ import os
 import sys
 import sqlite3
 from pathlib import Path
-import xml.etree.ElementTree as ET
-import xml.dom.minidom
+
 from PyQt5.QtWidgets import (QVBoxLayout, QRadioButton, QComboBox, QLineEdit, QApplication, QMainWindow,
  QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget, QDialog, QLabel,
  QCheckBox, QTableWidget, QHBoxLayout, QTableWidgetItem, QSpinBox, QTextEdit, QScrollArea,
- QHeaderView, QAbstractItemView, QGridLayout, QProgressBar, QGroupBox)
+ QHeaderView, QAbstractItemView, QGridLayout, QProgressBar, QGroupBox, QStyledItemDelegate)
+from PyQt5.QtCore import Qt
 from PyQt5.QtCore import Qt, QRect, pyqtSlot
 from PyQt5.QtGui import QPainter, QTransform, QFont
 
@@ -22,7 +22,6 @@ from module.auto_module import InspectionAutomation
 
 path_src = Path(__file__)
 path_database = path_src.parent / "AutoInspection.db"
-path_script = path_src.parent.parent / 'script'
 
 windows_inspection_targets = list()
 linux_inspection_targets = list()
@@ -79,7 +78,7 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         self.setWindowTitle('취약점 점검 시스템')
-        self.setGeometry(260, 150, 980, 700)  # 테이블 글자 짤림 현상때문에 크기를 키움
+        self.setGeometry(260, 150, 1015, 700)  # 테이블 글자 짤림 현상때문에 크기를 키움
 
         self.stackedWidget = QStackedWidget()
         self.setCentralWidget(self.stackedWidget)
@@ -87,7 +86,6 @@ class MainWindow(QMainWindow):
         self.mainPage = MainPage(self.stackedWidget)
 
         self.stackedWidget.addWidget(self.mainPage)
-        
         
 # [CLASS] MainPage
 # [DESC] 메인 페이지 클래스
@@ -107,7 +105,6 @@ class MainPage(QWidget):
         """
         super().__init__()
         self.input_target_lists = list()
-        self.inspection_results_list = list()
         self.os_type = None
         self.connection_type = None
         self.stackedWidget = stackedWidget
@@ -183,13 +180,14 @@ class MainPage(QWidget):
         
         input_layout.addWidget(connection_type_group_box, 1, 1)
 
-        port_line_edit = QLineEdit()
-        port_line_edit.setPlaceholderText("포트 번호")
-        input_layout.addWidget(port_line_edit, 2, 0)
-
         id_line_edit = QLineEdit()
         id_line_edit.setPlaceholderText("ID")
-        input_layout.addWidget(id_line_edit, 2, 1)
+        input_layout.addWidget(id_line_edit, 2, 0)
+
+
+        port_line_edit = QLineEdit()
+        port_line_edit.setPlaceholderText("포트 번호")
+        input_layout.addWidget(port_line_edit, 2, 1)
 
         password_line_edit = QLineEdit()
         password_line_edit.setEchoMode(QLineEdit.Password)
@@ -210,18 +208,25 @@ class MainPage(QWidget):
         self.target_lists_table.setHorizontalHeaderLabels(['시스템 장치명', 'OS', '접속 방식', 'IP 주소', '삭제'])
         self.target_lists_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.target_lists_table.horizontalHeader().setStretchLastSection(True)
-        
+
+        # 각 열 너비 조정
+        self.target_lists_table.setColumnWidth(0, 170)  # 시스템 장치명 열 너비
+        self.target_lists_table.setColumnWidth(1, 170)  # OS 열 너비
+        self.target_lists_table.setColumnWidth(2, 200)  # 접속 방식 열 너비
+        self.target_lists_table.setColumnWidth(3, 200)  # IP 주소 열 너비
+        self.target_lists_table.setColumnWidth(4, 40)   # 삭제 열 너비
+
         self.main_layout.addWidget(self.target_lists_table)
         
         next_button = QPushButton(">")
         next_button.setFixedSize(30, 30)
         next_button.clicked.connect(lambda: self.on_next_button_clicked())
         input_layout.addWidget(next_button, 4, 1, Qt.AlignRight)
+        
 
         # 입력칸들을 포함하는 레이아웃을 메인 레이아웃에 추가
         self.main_layout.addLayout(input_layout)
 
-        
         return vulnerability_check_tab
     
     @pyqtSlot()
@@ -237,14 +242,13 @@ class MainPage(QWidget):
             self.connection_type = "SSH"
         elif self.connection_type_samba.isChecked():
             self.connection_type = "Samba"
+
     # [Func] add_target_button_clicked
     # [DESC] 점검 대상 추가 버튼 클릭 이벤트 핸들러
     # [TODO] None
     # [ISSUE] None
     def add_target_button_clicked(self, target_name, os_type, connection_type, ip, port, id, password):
-        if target_name in self.input_target_lists:
-            self.ShowAlert("이미 해당 시스템 장치명을 가진 점검 대상이 존재합니다.")
-            return
+        
          # 대상 OS가 선택되지 않았을 경우 경고 메시지 출력 후 종료
         if os_type == None or os_type == "대상 OS 선택":
             self.ShowAlert("점검할 OS를 선택해 주세요")
@@ -272,12 +276,13 @@ class MainPage(QWidget):
         self.target_lists_table.setItem(rowPosition, 1, QTableWidgetItem(os_type))
         self.target_lists_table.setItem(rowPosition, 2, QTableWidgetItem(connection_type))
         self.target_lists_table.setItem(rowPosition, 3, QTableWidgetItem(ip))
+
         # 삭제 버튼 추가
         btnDelete = QPushButton("삭제")
         btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
         self.target_lists_table.setCellWidget(rowPosition, 4, btnDelete)
         
-                # 글자 크기 조절
+        # 글자 크기 조절
         for column in range(self.target_lists_table.columnCount()):
             item = self.target_lists_table.item(rowPosition, column)
             if item is not None:
@@ -313,9 +318,6 @@ class MainPage(QWidget):
         # password = "password"
         
         # 대상 OS에 대한 검사 목록 초기화 및 확인
-        if len(self.input_target_lists) == 0:
-            self.ShowAlert("최소 한개 이상의 점검 대상을 추가해 주세요.")
-            return 
         
         global windows_inspection_targets
         global linux_inspection_targets
@@ -326,7 +328,7 @@ class MainPage(QWidget):
 
             con = sqlite3.connect(path_database)
             cursor = con.cursor()
-
+            
             #db에서 내용불러오기
             try:
                 cursor.execute("SELECT TargetID, PluginName, TargetOS, Info, Description, CommandType, ResultType from InspectionTargets WHERE TargetOS=? AND DeleteFlag=0", ("Windows", ))
@@ -348,12 +350,8 @@ class MainPage(QWidget):
         
         self.inspection_list_page.SetData(windows_inspection_targets, linux_inspection_targets)
         self.inspection_list_page.SetTarget(self.input_target_lists)
-        for i in range(self.stackedWidget.count()):
-            if self.stackedWidget.widget(i) == self.inspection_list_page:
-                # 스택에 페이지가 이미 존재할 경우 그냥 이동
-                self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_list_page))
         self.stackedWidget.addWidget(self.inspection_list_page)
-        self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_list_page))
+        self.stackedWidget.setCurrentIndex(1)
         
         #self.ShowAlert("규제 지침 선택 화면으로 넘어가는 로직 구현")
 
@@ -369,10 +367,6 @@ class MainPage(QWidget):
         msgBox.setStandardButtons(QMessageBox.Ok)
         msgBox.exec_()
         
-    # [Func] create_inspection_history_tab
-    # [DESC] 점검 이력 조회 탭을 생성하는 메서드
-    # [TODO] 검색, 필터링 기능 구현
-    # [ISSUE] None
     def create_inspection_history_tab(self):
         inspection_history_tab = QWidget()
         layout = QVBoxLayout(inspection_history_tab)
@@ -616,6 +610,12 @@ class MainPage(QWidget):
         detail_dialog.setLayout(layout)
         detail_dialog.exec_()
 
+class CenterAlignDelegate(QStyledItemDelegate):
+    def initStyleOption(self, option, index):
+        super(CenterAlignDelegate, self).initStyleOption(option, index)
+        option.displayAlignment = Qt.AlignCenter
+
+
 class InspectionListPage(QWidget):
     
 
@@ -636,14 +636,13 @@ class InspectionListPage(QWidget):
         self.inspection_target_table.setHorizontalHeaderLabels(['선택', '시스템 장치명', 'OS', '접속 방식', 'IP 주소'])
         self.inspection_target_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.inspection_target_table.horizontalHeader().setStretchLastSection(True)
-        
+        self.inspection_target_table.setItemDelegate(CenterAlignDelegate(self))  # 중앙 정렬 델리게이트 설정
         
         self.inspection_list_table.setColumnCount(9)
         self.inspection_list_table.setHorizontalHeaderLabels(['선택', '운영체제', '이름', '설명', '실행 방식', '결과 방식', '삭제'])
         self.inspection_list_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.inspection_list_table.horizontalHeader().setStretchLastSection(True)
 
-        
         self.initUI()
 
     
@@ -655,14 +654,15 @@ class InspectionListPage(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
         
-
-        
         layout.addWidget(self.inspection_target_table)
         
         layout.addWidget(self.inspection_list_table)
 
+        # inspection_list_table 정렬 설정 
+        self.inspection_list_table.horizontalHeader().setDefaultAlignment(Qt.AlignHCenter)
+        self.inspection_list_table.verticalHeader().setDefaultAlignment(Qt.AlignVCenter)
 
-        
+            
         # 버튼 레이아웃 생성
         buttonLayout = QHBoxLayout()
         
@@ -679,9 +679,10 @@ class InspectionListPage(QWidget):
         
         # "규제 항목 추가" 버튼 생성 및 버튼 레이아웃에 설정
         add_btn = QPushButton("규제항목 추가") # '+' 버튼 생성 및 버튼 레이아웃에 설정
-        add_btn.setFixedSize(30, 30)
+        add_btn.setFixedSize(120, 30)
         add_btn.clicked.connect(self.AddInspectionList) # 규제 지침 등록 창 열기
         buttonLayout.addWidget(add_btn)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
+
         # 버튼을 가운데로 정렬하기 위해 빈 공간 추가
         buttonLayout.addStretch()
         buttonLayout.addWidget(executeButton)
@@ -691,13 +692,14 @@ class InspectionListPage(QWidget):
         layout.addLayout(buttonLayout)
 
         # 열 너비 설정
-        self.inspection_list_table.setColumnWidth(0, 30)
-        self.inspection_list_table.setColumnWidth(1, 210)
-        self.inspection_list_table.setColumnWidth(2, 450)
-        self.inspection_list_table.setColumnWidth(3, 90)
+        self.inspection_list_table.setColumnWidth(0, 20)
+        self.inspection_list_table.setColumnWidth(1, 70)
+        self.inspection_list_table.setColumnWidth(2, 200)
+        self.inspection_list_table.setColumnWidth(3, 440)
         self.inspection_list_table.setColumnWidth(4, 80)
-        self.inspection_list_table.setColumnWidth(5, 30)
-        
+        self.inspection_list_table.setColumnWidth(5, 75)
+        self.inspection_list_table.setColumnWidth(6, 10)
+
     # [Func] AddInspectionList
     # [DESC] 규제 지침 등록 화면
     # [TODO] 예외 처리
@@ -1141,6 +1143,9 @@ class InspectionProgressPage(QWidget):
                 self.addProgressTable(data)
             
     def addProgressTable(self, result_data):
+
+        if result_data is None or len(result_data) == 0:
+            return
         
         # '시스템 장치명', '점검 항목', '점검 내용', '결과 방식', '점검 결과'
         # 나머지 데이터 추가
