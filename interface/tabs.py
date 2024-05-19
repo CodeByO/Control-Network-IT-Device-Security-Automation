@@ -7,7 +7,8 @@ import os
 import sys
 import sqlite3
 from pathlib import Path
-
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
 from PyQt5.QtWidgets import (QVBoxLayout, QRadioButton, QComboBox, QLineEdit, QApplication, QMainWindow,
  QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget, QDialog, QLabel,
  QCheckBox, QTableWidget, QHBoxLayout, QTableWidgetItem, QSpinBox, QTextEdit, QScrollArea,
@@ -22,6 +23,7 @@ from module.auto_module import InspectionAutomation
 
 path_src = Path(__file__)
 path_database = path_src.parent / "AutoInspection.db"
+path_script = path_src.parent.parent / 'script'
 
 windows_inspection_targets = list()
 linux_inspection_targets = list()
@@ -87,6 +89,7 @@ class MainWindow(QMainWindow):
 
         self.stackedWidget.addWidget(self.mainPage)
         
+        
 # [CLASS] MainPage
 # [DESC] 메인 페이지 클래스
 # [TODO] None
@@ -105,6 +108,7 @@ class MainPage(QWidget):
         """
         super().__init__()
         self.input_target_lists = list()
+        self.inspection_results_list = list()
         self.os_type = None
         self.connection_type = None
         self.stackedWidget = stackedWidget
@@ -248,7 +252,9 @@ class MainPage(QWidget):
     # [TODO] None
     # [ISSUE] None
     def add_target_button_clicked(self, target_name, os_type, connection_type, ip, port, id, password):
-        
+        if target_name in self.input_target_lists:
+            self.ShowAlert("이미 해당 시스템 장치명을 가진 점검 대상이 존재합니다.")
+            return
          # 대상 OS가 선택되지 않았을 경우 경고 메시지 출력 후 종료
         if os_type == None or os_type == "대상 OS 선택":
             self.ShowAlert("점검할 OS를 선택해 주세요")
@@ -318,6 +324,9 @@ class MainPage(QWidget):
         # password = "password"
         
         # 대상 OS에 대한 검사 목록 초기화 및 확인
+        if len(self.input_target_lists) == 0:
+            self.ShowAlert("최소 한개 이상의 점검 대상을 추가해 주세요.")
+            return 
         
         global windows_inspection_targets
         global linux_inspection_targets
@@ -350,8 +359,12 @@ class MainPage(QWidget):
         
         self.inspection_list_page.SetData(windows_inspection_targets, linux_inspection_targets)
         self.inspection_list_page.SetTarget(self.input_target_lists)
+        for i in range(self.stackedWidget.count()):
+            if self.stackedWidget.widget(i) == self.inspection_list_page:
+                # 스택에 페이지가 이미 존재할 경우 그냥 이동
+                self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_list_page))
         self.stackedWidget.addWidget(self.inspection_list_page)
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_list_page))
         
         #self.ShowAlert("규제 지침 선택 화면으로 넘어가는 로직 구현")
 
@@ -392,14 +405,14 @@ class MainPage(QWidget):
         topLayout.addWidget(search)
 
         layout.addLayout(topLayout)
-
-        self.table = QTableWidget() # 테이블 생성
-        self.table.setColumnCount(4) 
-        self.table.setHorizontalHeaderLabels(["날짜", "대상 OS", "IP 주소", "상세 결과"])
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.table.setSortingEnabled(True) # 정렬 기능 활성화
-        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        layout.addWidget(self.table)
+        
+        self.history_table = QTableWidget() # 테이블 생성
+        self.history_table.setColumnCount(5) 
+        self.history_table.setHorizontalHeaderLabels(["날짜", "시스템 장치명", "대상 OS", "IP 주소", "상세 결과"])
+        self.history_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.history_table.setSortingEnabled(True) # 정렬 기능 활성화
+        self.history_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        layout.addWidget(self.history_table)
 
         self.LoadRecord() # 이력 불러오기
 
@@ -407,45 +420,102 @@ class MainPage(QWidget):
 
     # [Func] LoadRecord
     # [DESC] 점검 이력을 불러오는 메서드
-    # [TODO] db 연결
+    # [TODO] 에러 테스트
     # [ISSUE] None
     def LoadRecord(self):
-        # 예시 데이터
-        data = [
-            {"date": "2024-01-01", "os": "Windows", "ip": "192.168.0.1"},
-            {"date": "2024-01-02", "os": "Linux", "ip": "192.168.0.2"}
-        ]
-    
-        for record in data:
-            row_position = self.table.rowCount()
-            self.table.insertRow(row_position)
         
+        global path_database
+        
+        if not os.path.exists(path_database):
+            self.ShowAlert("DB가 존재하지 않습니다.")
+            return 
+
+        con = sqlite3.connect(path_database)
+        cursor = con.cursor()
+
+        #db에서 내용불러오기
+        try:
+            cursor.execute("SELECT * FROM InspectionResults")
+        except (sqlite3.OperationalError, sqlite3.ProgrammingError):
+            self.ShowAlert("DB 실행 에러")
+            return 
+
+        inspection_result_list = cursor.fetchall()
+        if len(inspection_result_list) != 0:
+            self.result_dict = dict()
+            for result in inspection_result_list:
+                items_id = result[2]
+                if items_id not in self.result_dict:
+                    self.result_dict[items_id] = {
+                        "items" : [],
+                        "targets": [],
+                        "date": result[6].split()[0]
+                    }
+                self.result_dict[items_id]["targets"].append({result[1]: [result[3], result[4],  result[5]]})
+            for item in self.result_dict.keys():
+                try:
+                    cursor.execute("SELECT * from InspectionItems WHERE ItemsID=?",(item,))
+                except (sqlite3.OperationalError, sqlite3.ProgrammingError):
+                    self.ShowAlert("DB 실행 에러")
+                    return
+                self.result_dict[item]["items"] = list(cursor.fetchone())
+                target_result = dict()
+                for target in self.result_dict[item]["targets"]:
+                    for target_id, value in target.items():
+                        try:
+                            cursor.execute("SELECT Info, Description, ResultType, CommandName, CommandType, CommandString  from InspectionTargets WHERE TargetID=?",(target_id,))
+                        except (sqlite3.OperationalError, sqlite3.ProgrammingError):
+                            self.ShowAlert("DB 실행 에러")
+                            return
+                        target_select_list = list(cursor.fetchone())
+                        new_value = [target_select_list[i] for i in range(1, len(target_select_list))] + value
+                        target_result[target_select_list[0]] = new_value
+                
+                self.result_dict[item]["targets"] = target_result
+        
+        con.close()
+        
+        for item_id, item_data in self.result_dict.items():
             # 날짜, 대상 OS, IP 주소 데이터 삽입
-            self.table.setItem(row_position, 0, QTableWidgetItem(record['date']))
-            self.table.setItem(row_position, 1, QTableWidgetItem(record['os']))
-            self.table.setItem(row_position, 2, QTableWidgetItem(record['ip']))
-        
-            detail_result_btn = QPushButton('상세 결과') # '상세 결과' 버튼
-            detail_result_btn.clicked.connect(lambda _, row=row_position: self.DetailResult(row))
-        
-            widget = QWidget() # 상세 결과 버튼 테이블에 배치
+            row_position = self.history_table.rowCount()
+            self.history_table.insertRow(row_position)
+            self.history_table.setItem(row_position, 0, QTableWidgetItem(item_data['date']))  # 날짜
+            self.history_table.setItem(row_position, 1, QTableWidgetItem(item_data['items'][1]))  # 장치 이름
+            self.history_table.setItem(row_position, 2, QTableWidgetItem(item_data['items'][2]))  # 대상 OS
+            self.history_table.setItem(row_position, 3, QTableWidgetItem(item_data['items'][4]))  # IP 주소
+            
+            
+
+            # '상세 결과' 버튼 추가
+            detail_result_btn = QPushButton('상세 결과')
+            detail_result_btn.clicked.connect(lambda _, row=row_position: self.DetailResult(row, item_data['targets']))
+
+            widget = QWidget()
             btn_layout = QHBoxLayout(widget)
             btn_layout.addWidget(detail_result_btn)
             btn_layout.setAlignment(Qt.AlignCenter)
             btn_layout.setContentsMargins(0, 0, 0, 0)
             widget.setLayout(btn_layout)
-        
-            self.table.setCellWidget(row_position, 3, widget)
+
+            self.history_table.setCellWidget(row_position, 4, widget)
+            
+            # 글자 크기 조절
+            for column in range(self.history_table.columnCount()):
+                item = self.history_table.item(row_position, column)
+                if item is not None:
+                    item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
+                    item.setTextAlignment(Qt.AlignCenter)
+
             
     # [Func] DetailResult
     # [DESC] 선택한 점검 이력의 상세 결과를 불러옴
-    # [TODO] db 연결
+    # [TODO] 에러 테스트
     # [ISSUE] None      
-    def DetailResult(self, row):
+    def DetailResult(self, row, targets_data):
         # 선택된 행의 데이터 가져오기
-        date = self.table.item(row, 0).text()  # 날짜
-        os = self.table.item(row, 1).text()    # OS
-        ip = self.table.item(row, 2).text()    # IP 주소
+        date = self.history_table.item(row, 0).text()  # 날짜
+        os = self.history_table.item(row, 1).text()    # OS
+        ip = self.history_table.item(row, 2).text()    # IP 주소
 
         dialog = QDialog(self) # 상세 결과 창
         dialog.setWindowTitle("상세 결과")
@@ -460,25 +530,25 @@ class MainPage(QWidget):
         self.detail_table.setColumnCount(5)
         self.detail_table.setHorizontalHeaderLabels(["점검 항목", "점검 내용", "결과 방식", "점검 결과", "세부 내용"])
         self.detail_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-    
-        # 예시 데이터
-        data = [
-            {"info": "백신 프로그램 업데이트", "description": "Windows Defender 백신 프로그램을 업데이트 합니다.", "result_type": "action", "result": "안전", "detail": True},
-            {"info": "계정 잠금 임계값 변경", "description": "계정 잠금 임계값을 5로 설정", "result_type": "action", "result": "취약", "detail": True}
-        ]
-    
-        for record in data:
+        self.detail_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        # 테이블 초기화
+        self.detail_table.setRowCount(0)
+
+        # self.result_dict 순회하며 테이블에 데이터 추가
+        for target_id, target_info in targets_data.items():
+            # 세부 내용 데이터 추가
             row_position = self.detail_table.rowCount()
             self.detail_table.insertRow(row_position)
-        
+
             # 데이터 삽입
-            self.detail_table.setItem(row_position, 0, QTableWidgetItem(record['info']))
-            self.detail_table.setItem(row_position, 1, QTableWidgetItem(record['description']))
-            self.detail_table.setItem(row_position, 2, QTableWidgetItem(record['result_type']))
-            self.detail_table.setItem(row_position, 3, QTableWidgetItem(record['result']))
-        
-            detail_btn = QPushButton('세부 내용') # 세부 내용 버튼 배치
-            detail_btn.clicked.connect(lambda _, row=row_position: self.ItemDetails(row))
+            self.detail_table.setItem(row_position, 0, QTableWidgetItem(target_id))
+            self.detail_table.setItem(row_position, 1, QTableWidgetItem(target_info[0]))  # 설명
+            self.detail_table.setItem(row_position, 2, QTableWidgetItem(target_info[1]))  # 결과 유형
+            self.detail_table.setItem(row_position, 3, QTableWidgetItem(target_info[5]))  # 결과
+
+            # 세부 내용 버튼 추가
+            detail_btn = QPushButton('세부 내용')
+            detail_btn.clicked.connect(lambda _, row=row_position: self.ItemDetails(row, target_info))
 
             widget = QWidget()
             btn_layout = QHBoxLayout(widget)
@@ -488,6 +558,7 @@ class MainPage(QWidget):
             widget.setLayout(btn_layout)
 
             self.detail_table.setCellWidget(row_position, 4, widget)
+                        
 
 
         layout.addWidget(self.detail_table)
@@ -497,15 +568,16 @@ class MainPage(QWidget):
         
     # [Func] ItemDetails
     # [DESC] 점검 항목의 세부 내용을 보여줌
-    # [TODO] db 연결
+    # [TODO] 에러 테스트
     # [ISSUE] None    
-    def ItemDetails(self, row):
+    def ItemDetails(self, row, target_info):
         # 선택된 행의 데이터 가져오기
         info = self.detail_table.item(row, 0).text()  # 점검 항목
         description = self.detail_table.item(row, 1).text()     # 점검 내용
         result_type = self.detail_table.item(row, 2).text() # 결과 방식
         result = self.detail_table.item(row, 3).text()      # 점검 결과
-
+        
+        
         detail_dialog = QDialog(self)  # 세부 내용 창
         detail_dialog.setWindowTitle("세부 내용")
         detail_dialog.resize(800, 600)
@@ -536,9 +608,11 @@ class MainPage(QWidget):
         layout.addWidget(result_type_content)
 
         # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
-        for label_text in ["CommandName", "CommandType", "CommandString", "출력 메시지"]:
+        for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], [target_info[i] for i in [2, 3, 4, 6, 7]]):
             label = QLabel(label_text)
             content = QLineEdit()
+            content.setText(content_text)
+            content.setReadOnly
             layout.addWidget(label)
             layout.addWidget(content)
 
@@ -645,7 +719,7 @@ class InspectionListPage(QWidget):
         
     # [Func] AddInspectionList
     # [DESC] 규제 지침 등록 화면
-    # [TODO] db 연결, 저장 시 xml 파일 생성 기능 구현
+    # [TODO] 예외 처리
     # [ISSUE] None        
     def AddInspectionList(self):
         self.dialog = QDialog(self)
@@ -665,6 +739,8 @@ class InspectionListPage(QWidget):
             "CommandType": ["Powershell", "cmd", "Bash"]
         }
 
+        self.input_fields = {}  # 입력 필드를 저장할 딕셔너리
+
         for field, input_type in zip(fields, input_types):
             label = QLabel(field)
             if input_type == QTextEdit:  # TextEdit인 경우
@@ -674,12 +750,14 @@ class InspectionListPage(QWidget):
                 text_edit.setMinimumHeight(200)
                 input_field.setWidget(text_edit)
                 input_field.setWidgetResizable(True)
+                self.input_fields[field] = text_edit  # QTextEdit을 딕셔너리에 저장
             else:
                 input_field = input_type()
                 if isinstance(input_field, QComboBox):
                     if field in options:
                         for option in options[field]:
                             input_field.addItem(option)
+                self.input_fields[field] = input_field  # 다른 입력 필드를 딕셔너리에 저장
             layout.addWidget(label)
             layout.addWidget(input_field)
 
@@ -687,13 +765,128 @@ class InspectionListPage(QWidget):
         btn_layout.addStretch()
         save_btn = QPushButton('저장')  # '저장' 버튼 추가
         save_btn.setFixedSize(40, 30)
+        save_btn.clicked.connect(self.addNewPlugin)  # 클릭 이벤트에 함수 연결
         btn_layout.addWidget(save_btn)
         btn_layout.addStretch()
 
         layout.addLayout(btn_layout)
 
         self.dialog.exec_()
+    # [Func] addNewPlugin
+    # [DESC] 규제지침 등록 "저장" 버튼 클릭 이벤트
+    # [TODO] None
+    # [ISSUE] None
+    def addNewPlugin(self):
+        input_values = {field: input_field.text() if isinstance(input_field, QLineEdit) else 
+                        input_field.toPlainText() if isinstance(input_field, QTextEdit) else 
+                        input_field.value() if isinstance(input_field, QSpinBox) else 
+                        input_field.currentText() if isinstance(input_field, QComboBox) else 
+                        None
+                        for field, input_field in self.input_fields.items()}
+        if input_values['CommandType'] == 'Powershell':
+            value = input_values.get("CommandString")
+            input_values['CommandString'] = f"powershell.exe -Command \"{value}\""
         
+        global path_script, path_database
+        
+        xml_path = path_script / f"{input_values['PluginName']}.xml"
+        
+        if os.path.exists(xml_path):
+            self.ShowAlert("동일한 이름의 규제 지침이 존재합니다.")
+            self.dialog.reject()
+        
+        root = ET.Element("Plugin", name=input_values["PluginName"])
+
+        plugin_version = ET.SubElement(root, "PluginVersion")
+        plugin_version.text = "1" 
+
+        plugin_name = ET.SubElement(root, "PluginName")
+        plugin_name.text = f"{input_values['PluginName']}.xml"
+
+        for key in ["TargetOS", "Result_Type", "Info", "Description"]:
+            element = ET.SubElement(root, key)
+            element.text = input_values[key]
+
+        commands = ET.SubElement(root, "Commands")
+
+        command_count = ET.SubElement(commands, "CommandCount")
+        command_count.text = str(input_values["CommandCount"])
+
+        command = ET.SubElement(commands, "Command")
+
+        for key in ["CommandName", "CommandType", "CommandString"]:
+            element = ET.SubElement(command, key)
+            element.text = input_values[key]
+        
+        
+        rough_string = ET.tostring(root, 'utf-8')
+        reparsed = xml.dom.minidom.parseString(rough_string)
+        pretty_xml_as_string = reparsed.toprettyxml(indent="    ")
+        with open(xml_path, "w", encoding="utf-8") as f:
+            f.write(pretty_xml_as_string)
+
+        if os.path.exists(path_database):
+            con = sqlite3.connect(path_database)
+        else:
+            self.ShowAlert("DB를 찾을 수 없습니다.")
+            self.dialog.reject()
+        
+        cursor = con.cursor()
+        cursor.execute("INSERT INTO InspectionTargets(PluginName, PluginVersion, TargetOS, ResultType, Info, Description, CommandCount, CommandName, CommandType, CommandString, XmlFilePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (input_values["PluginName"], "1", input_values["TargetOS"], input_values["Result_Type"], input_values["Info"], input_values["Description"], input_values["CommandCount"], input_values["CommandName"], input_values["CommandType"], input_values["CommandString"], str(xml_path)))
+        con.commit()
+        targets_id = cursor.lastrowid
+        con.close()
+        
+        global windows_inspection_targets, linux_inspection_targets
+        target_entry = (
+            targets_id,
+            input_values["PluginName"],
+            input_values["TargetOS"],
+            input_values["Info"],
+            input_values["Description"],
+            input_values["CommandType"],
+            input_values["Result_Type"]
+        )
+
+        if input_values['TargetOS'] == "Windows":
+            windows_inspection_targets.append(list(target_entry))
+        else:
+            linux_inspection_targets.append(list(target_entry))
+            
+        rowPosition = self.inspection_list_table.rowCount()
+        self.inspection_list_table.insertRow(rowPosition)
+        
+        # 체크박스 추가
+        chkBoxWidget = QWidget()
+        chkBox = QCheckBox()
+        chkBoxLayout = QHBoxLayout(chkBoxWidget)
+        chkBoxLayout.addWidget(chkBox)
+        chkBoxLayout.setAlignment(Qt.AlignCenter)
+        chkBoxLayout.setContentsMargins(0,0,0,0)
+        self.inspection_list_table.setCellWidget(rowPosition, 0, chkBoxWidget)
+        # 나머지 데이터 추가
+        self.inspection_list_table.setItem(rowPosition, 1, QTableWidgetItem(input_values["TargetOS"]))
+        self.inspection_list_table.setItem(rowPosition, 2, QTableWidgetItem(input_values["PluginName"]))
+        self.inspection_list_table.setItem(rowPosition, 3, QTableWidgetItem(input_values["Description"]))
+        self.inspection_list_table.setItem(rowPosition, 4, QTableWidgetItem(input_values["CommandType"]))
+        self.inspection_list_table.setItem(rowPosition, 5, QTableWidgetItem(input_values["Result_Type"]))
+        
+        # 삭제 버튼 추가
+        btnDelete = QPushButton("삭제")
+        btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
+        self.inspection_list_table.setCellWidget(rowPosition, 6, btnDelete)
+        self.inspection_list_table.setItem(rowPosition, 7, QTableWidgetItem(input_values["PluginName"]))
+        self.inspection_list_table.setColumnHidden(7, True)
+        self.inspection_list_table.setItem(rowPosition, 8, QTableWidgetItem(str(targets_id)))
+        self.inspection_list_table.setColumnHidden(8, True)
+        
+        # 글자 크기 조절
+        for column in range(self.inspection_list_table.columnCount()):
+            item = self.inspection_list_table.item(rowPosition, column)
+            if item is not None:
+                item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
+                item.setTextAlignment(Qt.AlignCenter)
+        self.dialog.accept()
     # [Func] goBack
     # [DESC] 뒤로 가기 버튼 클릭 이벤트 핸들러
     # [TODO] None
@@ -715,16 +908,27 @@ class InspectionListPage(QWidget):
             chkBox = chkBoxWidget.findChild(QCheckBox)
             if chkBox.isChecked():
                 selected_targets_list.append(self.target_lists[row])
+                
+        if len(selected_targets_list) == 0:
+            self.ShowAlert("최소한 하나의 점검 대상을 선택해 주세요")
+            return
         for row in range(self.inspection_list_table.rowCount()):
             chkBoxWidget = self.inspection_list_table.cellWidget(row, 0)
             chkBox = chkBoxWidget.findChild(QCheckBox)
             if chkBox.isChecked():
                 plugin_dict[self.inspection_list_table.item(row, 7).text()] = [self.inspection_list_table.item(row, 1).text() ,int(self.inspection_list_table.item(row, 8).text())]
         
-        
+        if len(plugin_dict) == 0:
+            self.ShowAlert("최소한 하나의 규제 지침을 선택해 주세요")
+            return 
         self.inspection_progress_page.setInspectionData(selected_targets_list, plugin_dict)
+        for i in range(self.stackedWidget.count()):
+            if self.stackedWidget.widget(i) == self.inspection_progress_page:
+                self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_progress_page))
+                self.inspection_progress_page.runInspection()
+        
         self.stackedWidget.addWidget(self.inspection_progress_page)
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_progress_page))
         self.inspection_progress_page.runInspection()
         #InspectionAutomation(self.os_type, self.ip, self.port, self.connection_type, self.id, self.password, plugin_dict)
         
@@ -974,14 +1178,14 @@ class InspectionProgressPage(QWidget):
     # [TODO] None
     # [ISSUE] None        
     def goBack(self):
-        self.progressTable.clearContents()
-        self.progressTable.setRowCount(0)
+        self.progress_table.clearContents()
+        self.progress_table.setRowCount(0)
         self.stackedWidget.setCurrentIndex(1)  # 점검 항목 선택 페이지로 돌아가기 
     
     
     def returnToHome(self):
-        self.progressTable.clearContents()
-        self.progressTable.setRowCount(0)
+        self.progress_table.clearContents()
+        self.progress_table.setRowCount(0)
         self.stackedWidget.setCurrentIndex(0) # 점검 대상 등록 페이지로 돌아가기
     
     # [Func] cancelInspection
