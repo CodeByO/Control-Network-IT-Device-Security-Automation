@@ -7,8 +7,7 @@ import os
 import sys
 import sqlite3
 from pathlib import Path
-import xml.etree.ElementTree as ET
-import xml.dom.minidom
+
 from PyQt5.QtWidgets import (QVBoxLayout, QRadioButton, QComboBox, QLineEdit, QApplication, QMainWindow,
  QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget, QDialog, QLabel,
  QCheckBox, QTableWidget, QHBoxLayout, QTableWidgetItem, QSpinBox, QTextEdit, QScrollArea,
@@ -23,7 +22,6 @@ from module.auto_module import InspectionAutomation
 
 path_src = Path(__file__)
 path_database = path_src.parent / "AutoInspection.db"
-path_script = path_src.parent.parent / 'script'
 
 windows_inspection_targets = list()
 linux_inspection_targets = list()
@@ -89,7 +87,6 @@ class MainWindow(QMainWindow):
 
         self.stackedWidget.addWidget(self.mainPage)
         
-        
 # [CLASS] MainPage
 # [DESC] 메인 페이지 클래스
 # [TODO] None
@@ -108,7 +105,6 @@ class MainPage(QWidget):
         """
         super().__init__()
         self.input_target_lists = list()
-        self.inspection_results_list = list()
         self.os_type = None
         self.connection_type = None
         self.stackedWidget = stackedWidget
@@ -252,9 +248,7 @@ class MainPage(QWidget):
     # [TODO] None
     # [ISSUE] None
     def add_target_button_clicked(self, target_name, os_type, connection_type, ip, port, id, password):
-        if target_name in self.input_target_lists:
-            self.ShowAlert("이미 해당 시스템 장치명을 가진 점검 대상이 존재합니다.")
-            return
+        
          # 대상 OS가 선택되지 않았을 경우 경고 메시지 출력 후 종료
         if os_type == None or os_type == "대상 OS 선택":
             self.ShowAlert("점검할 OS를 선택해 주세요")
@@ -324,9 +318,6 @@ class MainPage(QWidget):
         # password = "password"
         
         # 대상 OS에 대한 검사 목록 초기화 및 확인
-        if len(self.input_target_lists) == 0:
-            self.ShowAlert("최소 한개 이상의 점검 대상을 추가해 주세요.")
-            return 
         
         global windows_inspection_targets
         global linux_inspection_targets
@@ -359,12 +350,8 @@ class MainPage(QWidget):
         
         self.inspection_list_page.SetData(windows_inspection_targets, linux_inspection_targets)
         self.inspection_list_page.SetTarget(self.input_target_lists)
-        for i in range(self.stackedWidget.count()):
-            if self.stackedWidget.widget(i) == self.inspection_list_page:
-                # 스택에 페이지가 이미 존재할 경우 그냥 이동
-                self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_list_page))
         self.stackedWidget.addWidget(self.inspection_list_page)
-        self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_list_page))
+        self.stackedWidget.setCurrentIndex(1)
         
         #self.ShowAlert("규제 지침 선택 화면으로 넘어가는 로직 구현")
 
@@ -380,10 +367,6 @@ class MainPage(QWidget):
         msgBox.setStandardButtons(QMessageBox.Ok)
         msgBox.exec_()
         
-    # [Func] create_inspection_history_tab
-    # [DESC] 점검 이력 조회 탭을 생성하는 메서드
-    # [TODO] 검색, 필터링 기능 구현
-    # [ISSUE] None
     def create_inspection_history_tab(self):
         inspection_history_tab = QWidget()
         layout = QVBoxLayout(inspection_history_tab)
@@ -719,7 +702,7 @@ class InspectionListPage(QWidget):
         
     # [Func] AddInspectionList
     # [DESC] 규제 지침 등록 화면
-    # [TODO] 예외 처리
+    # [TODO] db 연결, 저장 시 xml 파일 생성 기능 구현
     # [ISSUE] None        
     def AddInspectionList(self):
         self.dialog = QDialog(self)
@@ -739,8 +722,6 @@ class InspectionListPage(QWidget):
             "CommandType": ["Powershell", "cmd", "Bash"]
         }
 
-        self.input_fields = {}  # 입력 필드를 저장할 딕셔너리
-
         for field, input_type in zip(fields, input_types):
             label = QLabel(field)
             if input_type == QTextEdit:  # TextEdit인 경우
@@ -750,14 +731,12 @@ class InspectionListPage(QWidget):
                 text_edit.setMinimumHeight(200)
                 input_field.setWidget(text_edit)
                 input_field.setWidgetResizable(True)
-                self.input_fields[field] = text_edit  # QTextEdit을 딕셔너리에 저장
             else:
                 input_field = input_type()
                 if isinstance(input_field, QComboBox):
                     if field in options:
                         for option in options[field]:
                             input_field.addItem(option)
-                self.input_fields[field] = input_field  # 다른 입력 필드를 딕셔너리에 저장
             layout.addWidget(label)
             layout.addWidget(input_field)
 
@@ -765,128 +744,13 @@ class InspectionListPage(QWidget):
         btn_layout.addStretch()
         save_btn = QPushButton('저장')  # '저장' 버튼 추가
         save_btn.setFixedSize(40, 30)
-        save_btn.clicked.connect(self.addNewPlugin)  # 클릭 이벤트에 함수 연결
         btn_layout.addWidget(save_btn)
         btn_layout.addStretch()
 
         layout.addLayout(btn_layout)
 
         self.dialog.exec_()
-    # [Func] addNewPlugin
-    # [DESC] 규제지침 등록 "저장" 버튼 클릭 이벤트
-    # [TODO] None
-    # [ISSUE] None
-    def addNewPlugin(self):
-        input_values = {field: input_field.text() if isinstance(input_field, QLineEdit) else 
-                        input_field.toPlainText() if isinstance(input_field, QTextEdit) else 
-                        input_field.value() if isinstance(input_field, QSpinBox) else 
-                        input_field.currentText() if isinstance(input_field, QComboBox) else 
-                        None
-                        for field, input_field in self.input_fields.items()}
-        if input_values['CommandType'] == 'Powershell':
-            value = input_values.get("CommandString")
-            input_values['CommandString'] = f"powershell.exe -Command \"{value}\""
         
-        global path_script, path_database
-        
-        xml_path = path_script / f"{input_values['PluginName']}.xml"
-        
-        if os.path.exists(xml_path):
-            self.ShowAlert("동일한 이름의 규제 지침이 존재합니다.")
-            self.dialog.reject()
-        
-        root = ET.Element("Plugin", name=input_values["PluginName"])
-
-        plugin_version = ET.SubElement(root, "PluginVersion")
-        plugin_version.text = "1" 
-
-        plugin_name = ET.SubElement(root, "PluginName")
-        plugin_name.text = f"{input_values['PluginName']}.xml"
-
-        for key in ["TargetOS", "Result_Type", "Info", "Description"]:
-            element = ET.SubElement(root, key)
-            element.text = input_values[key]
-
-        commands = ET.SubElement(root, "Commands")
-
-        command_count = ET.SubElement(commands, "CommandCount")
-        command_count.text = str(input_values["CommandCount"])
-
-        command = ET.SubElement(commands, "Command")
-
-        for key in ["CommandName", "CommandType", "CommandString"]:
-            element = ET.SubElement(command, key)
-            element.text = input_values[key]
-        
-        
-        rough_string = ET.tostring(root, 'utf-8')
-        reparsed = xml.dom.minidom.parseString(rough_string)
-        pretty_xml_as_string = reparsed.toprettyxml(indent="    ")
-        with open(xml_path, "w", encoding="utf-8") as f:
-            f.write(pretty_xml_as_string)
-
-        if os.path.exists(path_database):
-            con = sqlite3.connect(path_database)
-        else:
-            self.ShowAlert("DB를 찾을 수 없습니다.")
-            self.dialog.reject()
-        
-        cursor = con.cursor()
-        cursor.execute("INSERT INTO InspectionTargets(PluginName, PluginVersion, TargetOS, ResultType, Info, Description, CommandCount, CommandName, CommandType, CommandString, XmlFilePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (input_values["PluginName"], "1", input_values["TargetOS"], input_values["Result_Type"], input_values["Info"], input_values["Description"], input_values["CommandCount"], input_values["CommandName"], input_values["CommandType"], input_values["CommandString"], str(xml_path)))
-        con.commit()
-        targets_id = cursor.lastrowid
-        con.close()
-        
-        global windows_inspection_targets, linux_inspection_targets
-        target_entry = (
-            targets_id,
-            input_values["PluginName"],
-            input_values["TargetOS"],
-            input_values["Info"],
-            input_values["Description"],
-            input_values["CommandType"],
-            input_values["Result_Type"]
-        )
-
-        if input_values['TargetOS'] == "Windows":
-            windows_inspection_targets.append(list(target_entry))
-        else:
-            linux_inspection_targets.append(list(target_entry))
-            
-        rowPosition = self.inspection_list_table.rowCount()
-        self.inspection_list_table.insertRow(rowPosition)
-        
-        # 체크박스 추가
-        chkBoxWidget = QWidget()
-        chkBox = QCheckBox()
-        chkBoxLayout = QHBoxLayout(chkBoxWidget)
-        chkBoxLayout.addWidget(chkBox)
-        chkBoxLayout.setAlignment(Qt.AlignCenter)
-        chkBoxLayout.setContentsMargins(0,0,0,0)
-        self.inspection_list_table.setCellWidget(rowPosition, 0, chkBoxWidget)
-        # 나머지 데이터 추가
-        self.inspection_list_table.setItem(rowPosition, 1, QTableWidgetItem(input_values["TargetOS"]))
-        self.inspection_list_table.setItem(rowPosition, 2, QTableWidgetItem(input_values["PluginName"]))
-        self.inspection_list_table.setItem(rowPosition, 3, QTableWidgetItem(input_values["Description"]))
-        self.inspection_list_table.setItem(rowPosition, 4, QTableWidgetItem(input_values["CommandType"]))
-        self.inspection_list_table.setItem(rowPosition, 5, QTableWidgetItem(input_values["Result_Type"]))
-        
-        # 삭제 버튼 추가
-        btnDelete = QPushButton("삭제")
-        btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
-        self.inspection_list_table.setCellWidget(rowPosition, 6, btnDelete)
-        self.inspection_list_table.setItem(rowPosition, 7, QTableWidgetItem(input_values["PluginName"]))
-        self.inspection_list_table.setColumnHidden(7, True)
-        self.inspection_list_table.setItem(rowPosition, 8, QTableWidgetItem(str(targets_id)))
-        self.inspection_list_table.setColumnHidden(8, True)
-        
-        # 글자 크기 조절
-        for column in range(self.inspection_list_table.columnCount()):
-            item = self.inspection_list_table.item(rowPosition, column)
-            if item is not None:
-                item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
-                item.setTextAlignment(Qt.AlignCenter)
-        self.dialog.accept()
     # [Func] goBack
     # [DESC] 뒤로 가기 버튼 클릭 이벤트 핸들러
     # [TODO] None
@@ -908,27 +772,16 @@ class InspectionListPage(QWidget):
             chkBox = chkBoxWidget.findChild(QCheckBox)
             if chkBox.isChecked():
                 selected_targets_list.append(self.target_lists[row])
-                
-        if len(selected_targets_list) == 0:
-            self.ShowAlert("최소한 하나의 점검 대상을 선택해 주세요")
-            return
         for row in range(self.inspection_list_table.rowCount()):
             chkBoxWidget = self.inspection_list_table.cellWidget(row, 0)
             chkBox = chkBoxWidget.findChild(QCheckBox)
             if chkBox.isChecked():
                 plugin_dict[self.inspection_list_table.item(row, 7).text()] = [self.inspection_list_table.item(row, 1).text() ,int(self.inspection_list_table.item(row, 8).text())]
         
-        if len(plugin_dict) == 0:
-            self.ShowAlert("최소한 하나의 규제 지침을 선택해 주세요")
-            return 
-        self.inspection_progress_page.setInspectionData(selected_targets_list, plugin_dict)
-        for i in range(self.stackedWidget.count()):
-            if self.stackedWidget.widget(i) == self.inspection_progress_page:
-                self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_progress_page))
-                self.inspection_progress_page.runInspection()
         
+        self.inspection_progress_page.setInspectionData(selected_targets_list, plugin_dict)
         self.stackedWidget.addWidget(self.inspection_progress_page)
-        self.stackedWidget.setCurrentIndex(self.stackedWidget.indexOf(self.inspection_progress_page))
+        self.stackedWidget.setCurrentIndex(2)
         self.inspection_progress_page.runInspection()
         #InspectionAutomation(self.os_type, self.ip, self.port, self.connection_type, self.id, self.password, plugin_dict)
         
@@ -1161,6 +1014,9 @@ class InspectionProgressPage(QWidget):
                 self.addProgressTable(data)
             
     def addProgressTable(self, result_data):
+	
+        if result_data is None or len(result_data) == 0:
+            return
         
         # '시스템 장치명', '점검 항목', '점검 내용', '결과 방식', '점검 결과'
         # 나머지 데이터 추가
@@ -1171,21 +1027,21 @@ class InspectionProgressPage(QWidget):
                 item = QTableWidgetItem(data)
                 item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
                 item.setTextAlignment(Qt.AlignCenter)
-                self.progress_table.setItem(rowPosition, i, item)
-    
+                self.progress_table.setItem(rowPosition, i, item)      
+   
     # [Func] goBack
     # [DESC] 뒤로 가기 버튼 클릭 이벤트 핸들러
     # [TODO] None
     # [ISSUE] None        
     def goBack(self):
-        self.progress_table.clearContents()
-        self.progress_table.setRowCount(0)
+        self.progressTable.clearContents()
+        self.progressTable.setRowCount(0)
         self.stackedWidget.setCurrentIndex(1)  # 점검 항목 선택 페이지로 돌아가기 
     
     
     def returnToHome(self):
-        self.progress_table.clearContents()
-        self.progress_table.setRowCount(0)
+        self.progressTable.clearContents()
+        self.progressTable.setRowCount(0)
         self.stackedWidget.setCurrentIndex(0) # 점검 대상 등록 페이지로 돌아가기
     
     # [Func] cancelInspection
