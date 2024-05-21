@@ -328,7 +328,7 @@ class MainPage(QWidget):
 
             con = sqlite3.connect(path_database)
             cursor = con.cursor()
-
+            
             #db에서 내용불러오기
             try:
                 cursor.execute("SELECT TargetID, PluginName, TargetOS, Info, Description, CommandType, ResultType from InspectionTargets WHERE TargetOS=? AND DeleteFlag=0", ("Windows", ))
@@ -697,8 +697,7 @@ class InspectionListPage(QWidget):
         self.inspection_list_table.setColumnWidth(2, 200)
         self.inspection_list_table.setColumnWidth(3, 440)
         self.inspection_list_table.setColumnWidth(4, 80)
-        self.inspection_list_table.setColumnWidth(5, 75)
-        self.inspection_list_table.setColumnWidth(6, 10)
+        self.inspection_list_table.setColumnWidth(5, 30)
         
     # [Func] AddInspectionList
     # [DESC] 규제 지침 등록 화면
@@ -1013,11 +1012,7 @@ class InspectionProgressPage(QWidget):
                 data = [None for i in range(plugin_len)]
                 self.addProgressTable(data)
             
-    def addProgressTable(self, result_data):
-	
-        if result_data is None or len(result_data) == 0:
-            return
-        
+    def addProgressTable(self, result_data):        
         # '시스템 장치명', '점검 항목', '점검 내용', '결과 방식', '점검 결과'
         # 나머지 데이터 추가
         for result in result_data:
@@ -1077,4 +1072,4 @@ def main():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    main()  
+    main()
