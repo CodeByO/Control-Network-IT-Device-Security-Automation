@@ -50,10 +50,8 @@ def ConnectTarget(ip:str, port:str, connection_type:str, username:str, password:
         ssh.set_missing_host_key_policy(AutoAddPolicy())
         try:
             ssh.connect(hostname=ip, username=username, password=password, port=int(port), timeout=10.0)
-            print("test")
             return ssh
         except (BadHostKeyException, AuthenticationException, OSError, NoValidConnectionsError, SSHException) as e:
-            print(e)
             return None
     elif connection_type == "Samba":
         conn = SMBConnection(username, password, 'auto_inspection', servername, 'WORKGROUP', use_ntlm_v2=True)
