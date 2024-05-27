@@ -482,9 +482,9 @@ class MainPage(QWidget):
         msgBox.exec_()
         
     # [Func] create_inspection_history_tab
-    # [DESC] 점검 이력 조회 탭을 생성하는 메서드
-    # [TODO] 검색, 필터링 기능 구현
-    # [ISSUE] None
+    # [DESC] 점검 이력 조회 화면
+    # [TODO] None
+    # [ISSUE] None    
     def create_inspection_history_tab(self):
         inspection_history_tab = QWidget()
         layout = QVBoxLayout(inspection_history_tab)
@@ -492,17 +492,19 @@ class MainPage(QWidget):
         topLayout = QHBoxLayout() # 상단 필터 및 검색 영역
         topLayout.addStretch(1)
         
-        filter = QComboBox() # 필터링 드롭다운
-        filter.addItem("전체")
-        filter.addItem("Windows")
-        filter.addItem("Linux")
-        filter.setPlaceholderText("대상 OS 필터")
-        filter.setFixedWidth(200)
-        topLayout.addWidget(filter)
+        self.filter = QComboBox()  # 클래스 속성으로 변경
+        self.filter.addItem("대상 OS 필터")
+        self.filter.addItem("전체")
+        self.filter.addItem("Windows")
+        self.filter.addItem("Linux")
+        self.filter.setFixedWidth(200)
+        topLayout.addWidget(self.filter)
+        self.filter.currentIndexChanged.connect(self.FilterTable)
 
         search = QLineEdit() # 검색 필드
         search.setPlaceholderText("IP 주소 검색")
         search.setFixedWidth(200)
+        search.textChanged.connect(self.SearchIP)
         topLayout.addWidget(search)
 
         layout.addLayout(topLayout)
@@ -511,14 +513,38 @@ class MainPage(QWidget):
         self.history_table.setColumnCount(5) 
         self.history_table.setHorizontalHeaderLabels(["날짜", "시스템 장치명", "대상 OS", "IP 주소", "상세 결과"])
         self.history_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.history_table.setSortingEnabled(True) # 정렬 기능 활성화
+        self.history_table.setSortingEnabled(True) # 정렬 기능
         self.history_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         layout.addWidget(self.history_table)
 
         self.LoadRecord() # 이력 불러오기
 
         return inspection_history_tab
-
+    
+    # [Func] FilterTable
+    # [DESC] 선택한 대상 OS별로 필터링 해주는 함수
+    # [TODO] None
+    # [ISSUE] None
+    def FilterTable(self):
+        current_filter = self.filter.currentText() 
+        for row in range(self.history_table.rowCount()):
+            os_item = self.history_table.item(row, 2) 
+            if os_item is not None:
+                show_row = (current_filter in ["전체", "대상 OS 필터"] or current_filter == os_item.text())
+                self.history_table.setRowHidden(row, not show_row)
+                
+    # [Func] SearchIP
+    # [DESC] 입력한 IP 주소에 해당하는 이력을 보여주는 함수
+    # [TODO] None
+    # [ISSUE] 키를 눌렀을때만 기능이 작동하도록 할지  
+    def SearchIP(self, searchText):
+        for row in range(self.history_table.rowCount()):
+            ip_item = self.history_table.item(row, 3) 
+            if ip_item and searchText in ip_item.text():
+                self.history_table.setRowHidden(row, False)
+            else:
+                self.history_table.setRowHidden(row, True)
+                
     # [Func] LoadRecord
     # [DESC] 점검 이력을 불러오는 메서드
     # [TODO] 에러 테스트
@@ -660,8 +686,6 @@ class MainPage(QWidget):
 
             self.detail_table.setCellWidget(row_position, 4, widget)
                         
-
-
         layout.addWidget(self.detail_table)
 
         dialog.setLayout(layout)
@@ -673,11 +697,10 @@ class MainPage(QWidget):
     # [ISSUE] None    
     def ItemDetails(self, row, target_info):
         # 선택된 행의 데이터 가져오기
-        info = self.detail_table.item(row, 0).text()  # 점검 항목
-        description = self.detail_table.item(row, 1).text()     # 점검 내용
+        info = self.detail_table.item(row, 0).text()        # 점검 항목
+        description = self.detail_table.item(row, 1).text() # 점검 내용
         result_type = self.detail_table.item(row, 2).text() # 결과 방식
         result = self.detail_table.item(row, 3).text()      # 점검 결과
-        
         
         detail_dialog = QDialog(self)  # 세부 내용 창
         detail_dialog.setWindowTitle("세부 내용")
@@ -711,9 +734,14 @@ class MainPage(QWidget):
         # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
         for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], [target_info[i] for i in [2, 3, 4, 6, 7]]):
             label = QLabel(label_text)
-            content = QLineEdit()
+            if label_text == "CommandString":
+                content = QTextEdit()
+                content.setReadOnly(True)
+                content.setFixedHeight(100)
+            else:
+                content = QLineEdit()
+                content.setReadOnly(True)
             content.setText(content_text)
-            content.setReadOnly
             layout.addWidget(label)
             layout.addWidget(content)
 
@@ -771,8 +799,6 @@ class InspectionListPage(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
         
-
-        
         layout.addWidget(self.inspection_target_table)
         
         layout.addWidget(self.inspection_list_table)
@@ -795,8 +821,8 @@ class InspectionListPage(QWidget):
         executeButton.setFixedSize(100, 30)  # 버튼 크기 설정
         executeButton.clicked.connect(self.executeInspection)  # 클릭 시 executeInspection 메서드 호출
 
-        # "규제 항목 추가" 버튼 생성 및 버튼 레이아웃에 설정
-        add_btn = QPushButton("규제항목 추가") # '+' 버튼 생성 및 버튼 레이아웃에 설정
+        # "규제 지침 등록" 버튼 생성 및 버튼 레이아웃에 설정
+        add_btn = QPushButton("규제 지침 등록") # '+' 버튼 생성 및 버튼 레이아웃에 설정
         add_btn.setFixedSize(120, 30)
         add_btn.clicked.connect(self.AddInspectionList) # 규제 지침 등록 창 열기
         buttonLayout.addWidget(add_btn)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
@@ -872,6 +898,7 @@ class InspectionListPage(QWidget):
         layout.addLayout(btn_layout)
 
         self.dialog.exec_()
+        
     # [Func] addNewPlugin
     # [DESC] 규제지침 등록 "저장" 버튼 클릭 이벤트
     # [TODO] None
@@ -987,6 +1014,7 @@ class InspectionListPage(QWidget):
                 item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
                 item.setTextAlignment(Qt.AlignCenter)
         self.dialog.accept()
+        
     # [Func] goBack
     # [DESC] 뒤로 가기 버튼 클릭 이벤트 핸들러
     # [TODO] None
