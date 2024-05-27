@@ -130,10 +130,17 @@ class MainPage(QWidget):
         tab_widget.addTab(inspection_history_tab, "점검 이력\n조회")
         tab_widget.setTabPosition(QTabWidget.West)
         tab_widget.setStyleSheet("""
-            QTabBar::tab {
+           QTabBar::tab {
                 height: 80px;
                 width: 100px;
-                } 
+                background: #37648D;
+                color: white;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QTabBar::tab:selected {
+                background: #5A9BD3;
+            } 
             """)
         layout.addWidget(tab_widget)
 
@@ -148,74 +155,108 @@ class MainPage(QWidget):
         # 입력칸들을 위한 QGridLayout 생성
         input_layout = QGridLayout()
         
-        system_line_edit = QLineEdit()
-        system_line_edit.setPlaceholderText("시스템 명칭")
-        input_layout.addWidget(system_line_edit, 0, 0)  # 위치 지정
-
-        
+        # 대상 OS 선택 박스
         os_type_group_box = QGroupBox("대상 OS 선택")
-        self.os_type_windows = QRadioButton("Windows")
-        self.os_type_windows.clicked.connect(self.osTypeSelect)
-        self.os_type_linux = QRadioButton("Linux")
-        self.os_type_linux.clicked.connect(self.osTypeSelect)
-        
         os_type_layout = QHBoxLayout()
+        self.os_type_windows = QRadioButton("Windows")
+        self.os_type_linux = QRadioButton("Linux")
+        self.os_type_windows.clicked.connect(self.osTypeSelect)
+        self.os_type_linux.clicked.connect(self.osTypeSelect)
         os_type_layout.addWidget(self.os_type_windows)
-        os_type_layout.addWidget(self.os_type_linux) 
+        os_type_layout.addWidget(self.os_type_linux)
         os_type_group_box.setLayout(os_type_layout)
-        
-        input_layout.addWidget(os_type_group_box, 0, 1)
-        
-        ip_line_edit = QLineEdit()
-        ip_line_edit.setPlaceholderText("시스템 IP 주소")
-        input_layout.addWidget(ip_line_edit, 1, 0)
+        os_type_group_box.setFixedHeight(60)  # 고정된 높이 설정
 
+        # 접속 방식 선택 박스
         connection_type_group_box = QGroupBox("접속 방식 선택")
-        self.connection_type_ssh = QRadioButton("SSH")
-        self.connection_type_ssh.clicked.connect(self.connectionTypeSelect)
-        self.connection_type_samba = QRadioButton("Samba")
-        self.connection_type_samba.clicked.connect(self.connectionTypeSelect)
-        
         connection_type_layout = QHBoxLayout()
+        self.connection_type_ssh = QRadioButton("SSH")
+        self.connection_type_samba = QRadioButton("Samba")
+        self.connection_type_ssh.clicked.connect(self.connectionTypeSelect)
+        self.connection_type_samba.clicked.connect(self.connectionTypeSelect)
         connection_type_layout.addWidget(self.connection_type_ssh)
         connection_type_layout.addWidget(self.connection_type_samba)
         connection_type_group_box.setLayout(connection_type_layout)
+        connection_type_group_box.setFixedHeight(60)  # 고정된 높이 설정    
         
-        input_layout.addWidget(connection_type_group_box, 1, 1)
-
-        id_line_edit = QLineEdit()
-        id_line_edit.setPlaceholderText("ID")
-        input_layout.addWidget(id_line_edit, 2, 0)
+        # 선택 박스를 같은 줄에 배치
+        input_layout.addWidget(os_type_group_box, 0, 0)
+        input_layout.addWidget(connection_type_group_box, 0, 1)
 
         port_line_edit = QLineEdit()
         port_line_edit.setPlaceholderText("포트 번호")
-        input_layout.addWidget(port_line_edit, 2, 1)
+        port_line_edit.setFixedHeight(30)  # 고정된 높이 설정
+        input_layout.addWidget(port_line_edit, 1, 0, 1, 2)
 
+        system_line_edit = QLineEdit()
+        system_line_edit.setPlaceholderText("시스템 명칭")
+        system_line_edit.setFixedHeight(30)  # 고정된 높이 설정
+        input_layout.addWidget(system_line_edit, 2, 0, 1, 2)
+
+        # 시스템 IP 주소 입력칸
+        ip_line_edit = QLineEdit()
+        ip_line_edit.setPlaceholderText("시스템 IP 주소")
+        ip_line_edit.setFixedHeight(30)  # 고정된 높이 설정
+        input_layout.addWidget(ip_line_edit, 3, 0, 1, 2)
+
+        # ID 및 포트 번호 입력칸
+        id_line_edit = QLineEdit()
+        id_line_edit.setPlaceholderText("ID")
+        id_line_edit.setFixedHeight(30)  # 고정된 높이 설정
+        input_layout.addWidget(id_line_edit, 4, 0, 1, 2)
+
+        # 비밀번호 입력칸
         password_line_edit = QLineEdit()
         password_line_edit.setEchoMode(QLineEdit.Password)
         password_line_edit.setPlaceholderText("Password")
-        input_layout.addWidget(password_line_edit, 3, 0)
+        password_line_edit.setFixedHeight(30)  # 고정된 높이 설정
+        input_layout.addWidget(password_line_edit, 5, 0, 1, 2)
 
-        next_button = QPushButton("점검 대상 추가")
-        next_button.setFixedSize(150, 30)
-        """
-        next_button.clicked.connect(lambda: self.add_target_button_clicked( system_line_edit.text(),
-            self.os_type, self.connection_type,
-            ip_line_edit.text(), port_line_edit.text(),
-            id_line_edit.text(), password_line_edit.text()))
-        """
-        next_button.clicked.connect(lambda: self.add_target_button_clicked( system_line_edit,
-        self.os_type, self.connection_type,
-        ip_line_edit, port_line_edit,
-        id_line_edit, password_line_edit))
-        input_layout.addWidget(next_button, 3, 1)
+        # 전체 버튼 레이아웃 생성
+        button_layout = QHBoxLayout()
+        
+        # '점검 대상 추가' 버튼
+        add_target_button = QPushButton("점검 대상 추가")
+        add_target_button.setFixedSize(150, 30)
+        add_target_button.clicked.connect(lambda: self.add_target_button_clicked(system_line_edit,
+                                                                                 self.os_type, self.connection_type,
+                                                                                 ip_line_edit, port_line_edit,
+                                                                                 id_line_edit, password_line_edit))
+        # '점검 대상 추가' 버튼을 레이아웃에 추가하고 양쪽에 Stretch를 추가하여 중앙에 위치하도록 함
+        button_layout.addStretch(1)
+        button_layout.addWidget(add_target_button)
+        button_layout.addStretch(1)
+
+        # '>' 버튼
+        next_button = QPushButton(">")
+        next_button.setFixedSize(30, 30)
+        next_button.clicked.connect(lambda: self.on_next_button_clicked())
+        button_layout.addWidget(next_button)  # '>' 버튼을 레이아웃의 오른쪽에 추가
+        # '>' 버튼 오른쪽의 여백을 최소화하기 위해 Stretch를 추가하지 않음
+
+        # 버튼 레이아웃을 input_layout에 추가, Qt.AlignBottom | Qt.AlignRight 옵션은 필요 없음
+        input_layout.addLayout(button_layout, 6, 0, 1, 2, Qt.AlignBottom)
 
 
+        # QTableWidget 설정
         self.target_lists_table = QTableWidget()
         self.target_lists_table.setColumnCount(5)
         self.target_lists_table.setHorizontalHeaderLabels(['시스템 장치명', 'OS', '접속 방식', 'IP 주소', '삭제'])
         self.target_lists_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.target_lists_table.horizontalHeader().setStretchLastSection(True)
+        # 최대 높이를 설정합니다.
+        maxHeight = 330
+        self.target_lists_table.setMaximumHeight(maxHeight)
+        self.target_lists_table.setStyleSheet("""
+            QTableWidget {
+                background-color: #FFFFFF;
+                color: #000000;
+                font-size: 12px;
+            }
+            QTableWidget::item {
+                padding: 5px;
+            }
+        """)
 
         # 각 열 너비 조정
         self.target_lists_table.setColumnWidth(0, 170)  # 시스템 장치명 열 너비
@@ -223,18 +264,12 @@ class MainPage(QWidget):
         self.target_lists_table.setColumnWidth(2, 200)  # 접속 방식 열 너비
         self.target_lists_table.setColumnWidth(3, 200)  # IP 주소 열 너비
         self.target_lists_table.setColumnWidth(4, 40)   # 삭제 열 너비
-        
+
         self.main_layout.addWidget(self.target_lists_table)
-        
-        next_button = QPushButton(">")
-        next_button.setFixedSize(30, 30)
-        next_button.clicked.connect(lambda: self.on_next_button_clicked())
-        input_layout.addWidget(next_button, 4, 1, Qt.AlignRight)
 
         # 입력칸들을 포함하는 레이아웃을 메인 레이아웃에 추가
         self.main_layout.addLayout(input_layout)
 
-        
         return vulnerability_check_tab
     
     @pyqtSlot()
@@ -339,6 +374,7 @@ class MainPage(QWidget):
         btnDelete = QPushButton("삭제")
         btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
         self.target_lists_table.setCellWidget(rowPosition, 4, btnDelete)
+
         
         # 글자 크기 조절
         for column in range(self.target_lists_table.columnCount()):
@@ -753,12 +789,12 @@ class InspectionListPage(QWidget):
         btnBack.setFixedSize(30, 30)
         btnBack.clicked.connect(self.goBack)
         buttonLayout.addWidget(btnBack)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
-
+        
         # "점검 실행" 버튼 생성 및 버튼 레이아웃에 설정
         executeButton = QPushButton("점검 실행")
         executeButton.setFixedSize(100, 30)  # 버튼 크기 설정
         executeButton.clicked.connect(self.executeInspection)  # 클릭 시 executeInspection 메서드 호출
-        
+
         # "규제 항목 추가" 버튼 생성 및 버튼 레이아웃에 설정
         add_btn = QPushButton("규제항목 추가") # '+' 버튼 생성 및 버튼 레이아웃에 설정
         add_btn.setFixedSize(120, 30)
