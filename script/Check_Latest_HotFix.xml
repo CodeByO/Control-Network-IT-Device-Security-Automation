@@ -7,7 +7,7 @@
     <Info>최신 Hot Fix 적용 여부 확인</Info>
     <Description>가장 최근의 Hot Fix 적용을 확인할 수 있음</Description>
     <Commands>
-		    <CommandCount>1</CommandCount>
+	<CommandCount>1</CommandCount>
         <Command>
             <CommandName>Check_Unnecessary_User_Accounts</CommandName>
             <CommandType>Powershell</CommandType>
