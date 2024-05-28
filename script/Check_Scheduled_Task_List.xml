@@ -7,7 +7,7 @@
     <Info>예약된 작업 목록 확인</Info>
     <Description>예약된 작업의 목록을 표시함</Description>
     <Commands>
-		    <CommandCount>1</CommandCount>
+	<CommandCount>1</CommandCount>
         <Command>
             <CommandName>Check_Unnecessary_User_Accounts</CommandName>
             <CommandType>Powershell</CommandType>
