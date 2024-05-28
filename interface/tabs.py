@@ -831,6 +831,13 @@ class InspectionListPage(QWidget):
         buttonLayout.addWidget(executeButton)
         buttonLayout.addStretch()
 
+        dummy1 = QLabel("")
+        dummy1.setFixedSize(30, 30)
+        buttonLayout.addWidget(dummy1, alignment=Qt.AlignmentFlag.AlignRight)
+        dummy2 = QLabel("")
+        dummy2.setFixedSize(120, 30)
+        buttonLayout.addWidget(dummy2, alignment=Qt.AlignmentFlag.AlignRight)
+
         # 버튼 레이아웃을 메인 레이아웃에 추가하여 정렬
         layout.addLayout(buttonLayout)
 
