@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Check_Scheduled_Task_List">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Check_Scheduled_Task_List.xml</PluginName>
+    <TargetOS>Windows</TargetOS>
+    <Result_Type>info</Result_Type>
+    <Info>예약된 작업 목록 확인</Info>
+    <Description>예약된 작업의 목록을 표시함</Description>
+    <Commands>
+		    <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Check_Unnecessary_User_Accounts</CommandName>
+            <CommandType>Powershell</CommandType>
+            <CommandString>powershell.exe -Command "schtasks"</CommandString>
+        </Command>
+    </Commands>
+</Plugin>
