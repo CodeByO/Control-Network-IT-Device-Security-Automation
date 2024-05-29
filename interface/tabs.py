@@ -59,6 +59,7 @@ class VerticalTabWidget(QTabBar):
             painter.setTransform(transform)
             painter.drawText(QRect(0, 0, tab_rect.height(), tab_rect.width()), Qt.AlignCenter, tab_text)
             
+            self.setStyleSheet("color: #232939;")  # 전체 배경 색상 설정
             painter.restore() 
 
 # [CLASS] MainWindow
@@ -79,7 +80,9 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         self.setWindowTitle('취약점 점검 시스템')
-        self.setGeometry(260, 150, 1015, 700)  # 테이블 글자 짤림 현상때문에 크기를 키움
+        self.setGeometry(260, 150, 1015, 700)  # 테이블 글자 짤림 현상때문에 크기를 키움  
+
+        self.setStyleSheet("background-color: #232939")  # 전체 배경 색상 설정
 
         self.stackedWidget = QStackedWidget()
         self.setCentralWidget(self.stackedWidget)
@@ -110,7 +113,7 @@ class MainPage(QWidget):
         self.os_type = None
         self.connection_type = None
         self.stackedWidget = stackedWidget
-        self.inspection_list_page = InspectionListPage(stackedWidget)
+        self.inspection_list_page = InspectionListPage(stackedWidget)        
         self.setup_ui()
 
 
@@ -129,6 +132,7 @@ class MainPage(QWidget):
         tab_widget.addTab(vulnerability_check_tab, "취약점\n점검")
         tab_widget.addTab(inspection_history_tab, "점검 이력\n조회")
         tab_widget.setTabPosition(QTabWidget.West)
+        self.setStyleSheet("background-color: #F7F8FA;")  # 전체 배경 색상 설정  
         tab_widget.setStyleSheet("""
            QTabBar::tab {
                 height: 80px;
@@ -150,7 +154,7 @@ class MainPage(QWidget):
     # [ISSUE] None    
     def create_vulnerability_check_tab(self):
         vulnerability_check_tab = QWidget()
-        self.main_layout = QVBoxLayout(vulnerability_check_tab)  # 전체 위젯을 위한 QVBoxLayout
+        self.main_layout = QVBoxLayout(vulnerability_check_tab)  # 전체 위젯을 위한 QVBoxLayout        
 
         # 입력칸들을 위한 QGridLayout 생성
         input_layout = QGridLayout()
@@ -212,12 +216,22 @@ class MainPage(QWidget):
         password_line_edit.setFixedHeight(30)  # 고정된 높이 설정
         input_layout.addWidget(password_line_edit, 5, 0, 1, 2)
 
+        # 입력칸 배경 하얀색으로 설정
+        os_type_group_box.setStyleSheet("background-color: white;")
+        connection_type_group_box.setStyleSheet("background-color: white;")
+        port_line_edit.setStyleSheet("background-color: white;")
+        system_line_edit.setStyleSheet("background-color: white;")
+        ip_line_edit.setStyleSheet("background-color: white;")
+        id_line_edit.setStyleSheet("background-color: white;")
+        password_line_edit.setStyleSheet("background-color: white;")
+
         # 전체 버튼 레이아웃 생성
         button_layout = QHBoxLayout()
         
         # '점검 대상 추가' 버튼
         add_target_button = QPushButton("점검 대상 추가")
         add_target_button.setFixedSize(150, 30)
+        add_target_button.setStyleSheet("background-color: #232939; color: white")
         add_target_button.clicked.connect(lambda: self.add_target_button_clicked(system_line_edit,
                                                                                  self.os_type, self.connection_type,
                                                                                  ip_line_edit, port_line_edit,
@@ -230,13 +244,13 @@ class MainPage(QWidget):
         # '>' 버튼
         next_button = QPushButton(">")
         next_button.setFixedSize(30, 30)
+        next_button.setStyleSheet("background-color: #232939; color: white")
         next_button.clicked.connect(lambda: self.on_next_button_clicked())
         button_layout.addWidget(next_button)  # '>' 버튼을 레이아웃의 오른쪽에 추가
         # '>' 버튼 오른쪽의 여백을 최소화하기 위해 Stretch를 추가하지 않음
 
         # 버튼 레이아웃을 input_layout에 추가, Qt.AlignBottom | Qt.AlignRight 옵션은 필요 없음
         input_layout.addLayout(button_layout, 6, 0, 1, 2, Qt.AlignBottom)
-
 
         # QTableWidget 설정
         self.target_lists_table = QTableWidget()
@@ -498,13 +512,14 @@ class MainPage(QWidget):
         self.filter.addItem("Windows")
         self.filter.addItem("Linux")
         self.filter.setFixedWidth(200)
-        topLayout.addWidget(self.filter)
+        topLayout.addWidget(self.filter) 
         self.filter.currentIndexChanged.connect(self.FilterTable)
 
         search = QLineEdit() # 검색 필드
         search.setPlaceholderText("IP 주소 검색")
         search.setFixedWidth(200)
         search.textChanged.connect(self.SearchIP)
+        search.setStyleSheet("background-color: white;")
         topLayout.addWidget(search)
 
         layout.addLayout(topLayout)
@@ -512,6 +527,7 @@ class MainPage(QWidget):
         self.history_table = QTableWidget() # 테이블 생성
         self.history_table.setColumnCount(5) 
         self.history_table.setHorizontalHeaderLabels(["날짜", "시스템 장치명", "대상 OS", "IP 주소", "상세 결과"])
+        self.history_table.setStyleSheet("background-color: white;")       
         self.history_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.history_table.setSortingEnabled(True) # 정렬 기능
         self.history_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -639,6 +655,7 @@ class MainPage(QWidget):
     # [TODO] 에러 테스트
     # [ISSUE] None      
     def DetailResult(self, row, targets_data):
+
         # 선택된 행의 데이터 가져오기
         date = self.history_table.item(row, 0).text()  # 날짜
         os = self.history_table.item(row, 1).text()    # OS
@@ -647,6 +664,7 @@ class MainPage(QWidget):
         dialog = QDialog(self) # 상세 결과 창
         dialog.setWindowTitle("상세 결과")
         dialog.resize(800, 600)
+        dialog.setStyleSheet("background-color: #232939; color: #F7F8FA")  # 대화 상자의 배경색을 하얀색으로 설정
         layout = QVBoxLayout()
 
         header_label = QLabel(f"{date} | {os} | {ip}  점검 상세 결과") # 선택한 점검 이력의 정보 표시
@@ -658,6 +676,7 @@ class MainPage(QWidget):
         self.detail_table.setHorizontalHeaderLabels(["점검 항목", "점검 내용", "결과 방식", "점검 결과", "세부 내용"])
         self.detail_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.detail_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.detail_table.setStyleSheet("background-color: white; color: #232939")  # 대화 상자의 배경색을 하얀색으로 설정
         # 테이블 초기화
         self.detail_table.setRowCount(0)
 
@@ -705,6 +724,7 @@ class MainPage(QWidget):
         detail_dialog = QDialog(self)  # 세부 내용 창
         detail_dialog.setWindowTitle("세부 내용")
         detail_dialog.resize(800, 600)
+        detail_dialog.setStyleSheet("background-color: #232939; color: #F7F8FA")  # 대화 상자의 배경색을 하얀색으로 설정        
         layout = QVBoxLayout()
 
         # 점검 항목
@@ -742,6 +762,7 @@ class MainPage(QWidget):
                 content = QLineEdit()
                 content.setReadOnly(True)
             content.setText(content_text)
+            content.setStyleSheet("background-color: white; color: #232939")
             layout.addWidget(label)
             layout.addWidget(content)
 
@@ -752,6 +773,11 @@ class MainPage(QWidget):
         result_content.setReadOnly(True)
         layout.addWidget(result_label)
         layout.addWidget(result_content)
+
+        info_content.setStyleSheet("background-color: white; color: #232939")
+        description_content.setStyleSheet("background-color: white; color: #232939")
+        result_type_content.setStyleSheet("background-color: white; color: #232939")
+        result_content.setStyleSheet("background-color: white; color: #232939")
 
         detail_dialog.setLayout(layout)
         detail_dialog.exec_()
@@ -803,6 +829,8 @@ class InspectionListPage(QWidget):
         
         layout.addWidget(self.inspection_list_table)
 
+        self.setStyleSheet("background-color: #F7F8FA;")  # 전체 배경 색상 설정  
+
         # inspection_list_table 정렬 설정 
         self.inspection_list_table.horizontalHeader().setDefaultAlignment(Qt.AlignHCenter)
         self.inspection_list_table.verticalHeader().setDefaultAlignment(Qt.AlignVCenter)
@@ -813,17 +841,20 @@ class InspectionListPage(QWidget):
         # 뒤로 가기 버튼 추가 및 버튼 레이아웃에 설정
         btnBack = QPushButton("<")
         btnBack.setFixedSize(30, 30)
+        btnBack.setStyleSheet("background-color: #F7F8FA; color: 232939")
         btnBack.clicked.connect(self.goBack)
         buttonLayout.addWidget(btnBack)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
         
         # "점검 실행" 버튼 생성 및 버튼 레이아웃에 설정
         executeButton = QPushButton("점검 실행")
         executeButton.setFixedSize(100, 30)  # 버튼 크기 설정
+        executeButton.setStyleSheet("background-color: #F7F8FA; color: 232939")
         executeButton.clicked.connect(self.executeInspection)  # 클릭 시 executeInspection 메서드 호출
 
         # "규제 지침 등록" 버튼 생성 및 버튼 레이아웃에 설정
         add_btn = QPushButton("규제 지침 등록") # '+' 버튼 생성 및 버튼 레이아웃에 설정
         add_btn.setFixedSize(120, 30)
+        add_btn.setStyleSheet("background-color: #F7F8FA; color: #232939")
         add_btn.clicked.connect(self.AddInspectionList) # 규제 지침 등록 창 열기
         buttonLayout.addWidget(add_btn)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
         # 버튼을 가운데로 정렬하기 위해 빈 공간 추가
@@ -833,22 +864,24 @@ class InspectionListPage(QWidget):
 
         dummy1 = QLabel("")
         dummy1.setFixedSize(30, 30)
+        dummy1.setStyleSheet("background-color: #232939")
         buttonLayout.addWidget(dummy1, alignment=Qt.AlignmentFlag.AlignRight)
         dummy2 = QLabel("")
         dummy2.setFixedSize(120, 30)
+        dummy2.setStyleSheet("background-color: #232939")
         buttonLayout.addWidget(dummy2, alignment=Qt.AlignmentFlag.AlignRight)
 
         # 버튼 레이아웃을 메인 레이아웃에 추가하여 정렬
         layout.addLayout(buttonLayout)
 
         # 열 너비 설정
-        self.inspection_list_table.setColumnWidth(0, 20)
+        self.inspection_list_table.setColumnWidth(0, 10)
         self.inspection_list_table.setColumnWidth(1, 70)
-        self.inspection_list_table.setColumnWidth(2, 200)
+        self.inspection_list_table.setColumnWidth(2, 190)
         self.inspection_list_table.setColumnWidth(3, 440)
         self.inspection_list_table.setColumnWidth(4, 80)
-        self.inspection_list_table.setColumnWidth(5, 75)
-        self.inspection_list_table.setColumnWidth(6, 10)
+        self.inspection_list_table.setColumnWidth(5, 70)
+        self.inspection_list_table.setColumnWidth(6, 40)
         
     # [Func] AddInspectionList
     # [DESC] 규제 지침 등록 화면
