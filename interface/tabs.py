@@ -232,10 +232,14 @@ class MainPage(QWidget):
         add_target_button = QPushButton("점검 대상 추가")
         add_target_button.setFixedSize(150, 30)
         add_target_button.setStyleSheet("background-color: #232939; color: white")
-        add_target_button.clicked.connect(lambda: self.add_target_button_clicked(system_line_edit,
-                                                                                 self.os_type, self.connection_type,
-                                                                                 ip_line_edit, port_line_edit,
-                                                                                 id_line_edit, password_line_edit))
+        
+        # 테스트용 점검 대상 추가 - 추후 필수 삭제
+        add_target_button.clicked.connect(lambda:self.testTarget())
+        
+        # add_target_button.clicked.connect(lambda: self.add_target_button_clicked(system_line_edit,
+        #                                                                          self.os_type, self.connection_type,
+        #                                                                          ip_line_edit, port_line_edit,
+        #                                                                          id_line_edit, password_line_edit))
         # '점검 대상 추가' 버튼을 레이아웃에 추가하고 양쪽에 Stretch를 추가하여 중앙에 위치하도록 함
         button_layout.addStretch(1)
         button_layout.addWidget(add_target_button)
@@ -285,7 +289,28 @@ class MainPage(QWidget):
         self.main_layout.addLayout(input_layout)
 
         return vulnerability_check_tab
-    
+    # 테스트용 함수 -> 추후 필수 삭제
+    def testTarget(self):
+        rowPosition = self.target_lists_table.rowCount()
+        self.target_lists_table.insertRow(rowPosition)
+        self.target_lists_table.setItem(rowPosition, 0, QTableWidgetItem("test"))
+        self.target_lists_table.setItem(rowPosition, 1, QTableWidgetItem("Windows"))
+        self.target_lists_table.setItem(rowPosition, 2, QTableWidgetItem("SSH"))
+        self.target_lists_table.setItem(rowPosition, 3, QTableWidgetItem("172.19.197.174"))
+
+        # 삭제 버튼 추가
+        btnDelete = QPushButton("삭제")
+        btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
+        self.target_lists_table.setCellWidget(rowPosition, 4, btnDelete)
+        
+        # 글자 크기 조절
+        for column in range(self.target_lists_table.columnCount()):
+            item = self.target_lists_table.item(rowPosition, column)
+            if item is not None:
+                item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
+                item.setTextAlignment(Qt.AlignCenter)
+        
+        self.input_target_lists.append(["test", "Windows", "SSH", "172.19.197.174", "22", "etri", "2345"])
     @pyqtSlot()
     def osTypeSelect(self):
         if self.os_type_windows.isChecked():
@@ -424,12 +449,6 @@ class MainPage(QWidget):
         """
         다음 버튼 클릭 시 호출되는 메서드
         """
-        # os_type = "Windows"
-        # connection_type = "SSH"
-        # ip = "192.168.0.1"
-        # port = "22"
-        # id = "admin"
-        # password = "password"
         
         # 대상 OS에 대한 검사 목록 초기화 및 확인
         if len(self.input_target_lists) == 0:
@@ -1320,6 +1339,11 @@ class InspectionProgressPage(QWidget):
                     plugin_len += 1
 
             result_value, result_data = InspectionAutomation(target[0], target[1], target[2], target[3], target[4], target[5], target[6], target_plugin)
+           
+            if result_value != 0:
+                self.ShowAlert(f"에러 발생! ErrorCode:{result_value}")
+                self.goBack()
+                return
             
             if result_data is not None and len(result_data) != 0:
                 self.addProgressTable(result_data)
@@ -1346,6 +1370,12 @@ class InspectionProgressPage(QWidget):
                 item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
                 item.setTextAlignment(Qt.AlignCenter)
                 self.progress_table.setItem(rowPosition, i, item)
+            detail_result_btn = QPushButton("상세 결과")
+            detail_result_btn.clicked.connect(lambda: self.ItemsDetails(detail_result_btn))
+            self.inspection_list_table.setCellWidget(rowPosition, 5, detail_result_btn)
+    
+    def ItemsDetails(self):
+        pass
     
     # [Func] goBack
     # [DESC] 뒤로 가기 버튼 클릭 이벤트 핸들러
@@ -1382,7 +1412,17 @@ class InspectionProgressPage(QWidget):
                 if target[1] == plugin[0]:
                     progress_bar_len += 1
         self.progressBar.setMaximum(progress_bar_len)
-        
+    # [Func] ShowAlert
+    # [DESC] 경고 메시지를 표시하는 메서드
+    # [TODO] None
+    # [ISSUE] None
+    def ShowAlert(self, message):
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Information)
+        msgBox.setText(message)
+        msgBox.setWindowTitle("경고")
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.exec_()    
 # [Func] main
 # [DESC] 프로그램 진입점
 # [TODO] None

@@ -115,58 +115,6 @@ def ParseXml(target_os:str, plugin_dict : dict)->list:
     
     return inspection_lists
 
-def myexec(ssh, cmd, timeout, want_exitcode=False):
-  # one channel per command
-  stdin, stdout, stderr = ssh.exec_command(cmd) 
-  # get the shared channel for stdout/stderr/stdin
-  channel = stdout.channel
-
-  # we do not need stdin.
-  stdin.close()                 
-  # indicate that we're not going to write to that channel anymore
-  channel.shutdown_write()      
-
-  # read stdout/stderr in order to prevent read block hangs
-  stdout_chunks = []
-  stdout_chunks.append(stdout.channel.recv(len(stdout.channel.in_buffer)))
-  # chunked read to prevent stalls
-  while not channel.closed or channel.recv_ready() or channel.recv_stderr_ready(): 
-      # stop if channel was closed prematurely, and there is no data in the buffers.
-      got_chunk = False
-      readq, _, _ = select.select([stdout.channel], [], [], timeout)
-      for c in readq:
-          if c.recv_ready(): 
-              stdout_chunks.append(stdout.channel.recv(len(c.in_buffer)))
-              got_chunk = True
-          if c.recv_stderr_ready(): 
-              # make sure to read stderr to prevent stall    
-              stderr.channel.recv_stderr(len(c.in_stderr_buffer))  
-              got_chunk = True  
-      '''
-      1) make sure that there are at least 2 cycles with no data in the input buffers in order to not exit too early (i.e. cat on a >200k file).
-      2) if no data arrived in the last loop, check if we already received the exit code
-      3) check if input buffers are empty
-      4) exit the loop
-      '''
-      if not got_chunk \
-          and stdout.channel.exit_status_ready() \
-          and not stderr.channel.recv_stderr_ready() \
-          and not stdout.channel.recv_ready(): 
-          # indicate that we're not going to read from this channel anymore
-          stdout.channel.shutdown_read()  
-          # close the channel
-          stdout.channel.close()
-          break    # exit as remote side is finished and our bufferes are empty
-
-  # close all the pseudofiles
-  stdout.close()
-  stderr.close()
-
-  if want_exitcode:
-      # exit code is always ready at this point
-      return (''.join(stdout_chunks), stdout.channel.recv_exit_status())
-  return ''.join(stdout_chunks)
-
 
 # [Func] InspectionAutomation
 # [DESC] 정리된 스크립트를 이용하여 보안 취약점 점검
@@ -258,14 +206,21 @@ def InspectionAutomation(target_name:str, target_os:str, connection_type:str, ip
                         if 'True' in stdout:
                             inspection_status = 1
                     elif result_type == "info":
-                        pass
+                        inspection_status = 1
                     elif result_type == "registry":
-                        pass
+                        if stderr is not None:
+                            inspection_status = 1
                 else:
                     inspection_status = 1
             elif connection_type == "samba":
                 try:
-                    pass
+                    if result_type == "action":
+                        if 'True' in stdout:
+                            inspection_status = 1
+                    elif result_type == "info":
+                        pass
+                    elif result_type == "registry":
+                        pass
                 except OperationFailure:
                     pass
         inspection_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
