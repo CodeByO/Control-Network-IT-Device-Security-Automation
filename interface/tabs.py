@@ -10,7 +10,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from PyQt5.QtWidgets import (QVBoxLayout, QRadioButton, QComboBox, QLineEdit, QApplication, QMainWindow,
- QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget, QDialog, QLabel,
+ QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget, QDialog, QLabel, QFrame,
  QCheckBox, QTableWidget, QHBoxLayout, QTableWidgetItem, QSpinBox, QTextEdit, QScrollArea,
  QHeaderView, QAbstractItemView, QGridLayout, QProgressBar, QGroupBox, QStyledItemDelegate)
 from PyQt5.QtCore import Qt, QRect, pyqtSlot
@@ -58,8 +58,7 @@ class VerticalTabWidget(QTabBar):
             
             painter.setTransform(transform)
             painter.drawText(QRect(0, 0, tab_rect.height(), tab_rect.width()), Qt.AlignCenter, tab_text)
-            
-            self.setStyleSheet("color: #232939;")  # 전체 배경 색상 설정
+        
             painter.restore() 
 
 # [CLASS] MainWindow
@@ -80,9 +79,7 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         self.setWindowTitle('취약점 점검 시스템')
-        self.setGeometry(260, 150, 1015, 700)  # 테이블 글자 짤림 현상때문에 크기를 키움  
-
-        self.setStyleSheet("background-color: #232939")  # 전체 배경 색상 설정
+        self.setGeometry(260, 150, 1035, 700)  # 테이블 글자 짤림 현상때문에 크기를 키움  
 
         self.stackedWidget = QStackedWidget()
         self.setCentralWidget(self.stackedWidget)
@@ -131,16 +128,15 @@ class MainPage(QWidget):
         inspection_history_tab = self.create_inspection_history_tab()
         tab_widget.addTab(vulnerability_check_tab, "취약점\n점검")
         tab_widget.addTab(inspection_history_tab, "점검 이력\n조회")
-        tab_widget.setTabPosition(QTabWidget.West)
-        self.setStyleSheet("background-color: #F7F8FA;")  # 전체 배경 색상 설정  
+        tab_widget.setTabPosition(QTabWidget.West) 
         tab_widget.setStyleSheet("""
            QTabBar::tab {
                 height: 80px;
                 width: 100px;
                 background: #37648D;
-                color: white;
                 font-size: 12px;
                 font-weight: bold;
+                font-family: 'NanumBarunGothic';  /* 폰트 설정 수정 */
             }
             QTabBar::tab:selected {
                 background: #5A9BD3;
@@ -161,11 +157,14 @@ class MainPage(QWidget):
         
         # 대상 OS 선택 박스
         os_type_group_box = QGroupBox("대상 OS 선택")
+        os_type_group_box.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         os_type_layout = QHBoxLayout()
         self.os_type_windows = QRadioButton("Windows")
         self.os_type_linux = QRadioButton("Linux")
         self.os_type_windows.clicked.connect(self.osTypeSelect)
         self.os_type_linux.clicked.connect(self.osTypeSelect)
+        self.os_type_windows.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        self.os_type_linux.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         os_type_layout.addWidget(self.os_type_windows)
         os_type_layout.addWidget(self.os_type_linux)
         os_type_group_box.setLayout(os_type_layout)
@@ -173,15 +172,18 @@ class MainPage(QWidget):
 
         # 접속 방식 선택 박스
         connection_type_group_box = QGroupBox("접속 방식 선택")
+        connection_type_group_box.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정  
         connection_type_layout = QHBoxLayout()
         self.connection_type_ssh = QRadioButton("SSH")
         self.connection_type_samba = QRadioButton("Samba")
         self.connection_type_ssh.clicked.connect(self.connectionTypeSelect)
         self.connection_type_samba.clicked.connect(self.connectionTypeSelect)
+        self.connection_type_ssh.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        self.connection_type_samba.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         connection_type_layout.addWidget(self.connection_type_ssh)
         connection_type_layout.addWidget(self.connection_type_samba)
         connection_type_group_box.setLayout(connection_type_layout)
-        connection_type_group_box.setFixedHeight(60)  # 고정된 높이 설정    
+        connection_type_group_box.setFixedHeight(60)  # 고정된 높이 설정  
         
         # 선택 박스를 같은 줄에 배치
         input_layout.addWidget(os_type_group_box, 0, 0)
@@ -190,23 +192,27 @@ class MainPage(QWidget):
         port_line_edit = QLineEdit()
         port_line_edit.setPlaceholderText("포트 번호")
         port_line_edit.setFixedHeight(30)  # 고정된 높이 설정
+        port_line_edit.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         input_layout.addWidget(port_line_edit, 1, 0, 1, 2)
 
         system_line_edit = QLineEdit()
         system_line_edit.setPlaceholderText("시스템 명칭")
         system_line_edit.setFixedHeight(30)  # 고정된 높이 설정
+        system_line_edit.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         input_layout.addWidget(system_line_edit, 2, 0, 1, 2)
 
         # 시스템 IP 주소 입력칸
         ip_line_edit = QLineEdit()
         ip_line_edit.setPlaceholderText("시스템 IP 주소")
         ip_line_edit.setFixedHeight(30)  # 고정된 높이 설정
+        ip_line_edit.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         input_layout.addWidget(ip_line_edit, 3, 0, 1, 2)
 
         # ID 및 포트 번호 입력칸
         id_line_edit = QLineEdit()
         id_line_edit.setPlaceholderText("ID")
         id_line_edit.setFixedHeight(30)  # 고정된 높이 설정
+        id_line_edit.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         input_layout.addWidget(id_line_edit, 4, 0, 1, 2)
 
         # 비밀번호 입력칸
@@ -214,6 +220,7 @@ class MainPage(QWidget):
         password_line_edit.setEchoMode(QLineEdit.Password)
         password_line_edit.setPlaceholderText("Password")
         password_line_edit.setFixedHeight(30)  # 고정된 높이 설정
+        password_line_edit.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         input_layout.addWidget(password_line_edit, 5, 0, 1, 2)
 
         # 입력칸 배경 하얀색으로 설정
@@ -230,9 +237,27 @@ class MainPage(QWidget):
         
         # '점검 대상 추가' 버튼
         add_target_button = QPushButton("점검 대상 추가")
-        add_target_button.setFixedSize(150, 30)
-        add_target_button.setStyleSheet("background-color: #232939; color: white")
-        
+        add_target_button.setFixedSize(150, 40)
+        add_target_button.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        add_target_button.setStyleSheet("""
+            QPushButton {
+                color: #FFFFFF;
+                background-color: #1A73E8;
+                border: 1px solid #1A73E8;  /* 테두리 색상을 #1A73E8로 설정 */
+                border-radius: 4px;
+                font-size: 18px;
+            }
+            QPushButton:hover {
+                color: #1A73E8;
+                background-color: #FFFFFF;
+                border: 1px solid #1A73E8;  /* 호버 상태에서도 테두리 색상을 유지 */
+            }
+            QPushButton:pressed {
+                color: #1A73E8;
+                background-color: #FFFFFF;
+                border: 1px solid #1A73E8;  /* 눌린 상태에서도 테두리 색상을 유지 */
+            }
+        """)
         # 테스트용 점검 대상 추가 - 추후 필수 삭제
         add_target_button.clicked.connect(lambda:self.testTarget())
         
@@ -248,7 +273,20 @@ class MainPage(QWidget):
         # '>' 버튼
         next_button = QPushButton(">")
         next_button.setFixedSize(30, 30)
-        next_button.setStyleSheet("background-color: #232939; color: white")
+        next_button.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        next_button.setStyleSheet("""
+                                     QPushButton {
+                                         color: #1A73E8;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #1A73E8;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    """)
         next_button.clicked.connect(lambda: self.on_next_button_clicked())
         button_layout.addWidget(next_button)  # '>' 버튼을 레이아웃의 오른쪽에 추가
         # '>' 버튼 오른쪽의 여백을 최소화하기 위해 Stretch를 추가하지 않음
@@ -262,6 +300,7 @@ class MainPage(QWidget):
         self.target_lists_table.setHorizontalHeaderLabels(['시스템 장치명', 'OS', '접속 방식', 'IP 주소', '삭제'])
         self.target_lists_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.target_lists_table.horizontalHeader().setStretchLastSection(True)
+        self.target_lists_table.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         # 최대 높이를 설정합니다.
         maxHeight = 330
         self.target_lists_table.setMaximumHeight(maxHeight)
@@ -270,6 +309,7 @@ class MainPage(QWidget):
                 background-color: #FFFFFF;
                 color: #000000;
                 font-size: 12px;
+                font: NanumBarunGothic;  /* 여기에 폰트 설정 추가 */
             }
             QTableWidget::item {
                 padding: 5px;
@@ -302,6 +342,20 @@ class MainPage(QWidget):
         # 삭제 버튼 추가
         btnDelete = QPushButton("삭제")
         btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
+        btnDelete.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        btnDelete.setStyleSheet("""
+                                     QPushButton {
+                                         color: #ea4335;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #ea4335;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #ea4335; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #ea4335; }
+                                    """)
         self.target_lists_table.setCellWidget(rowPosition, 4, btnDelete)
         
         # 글자 크기 조절
@@ -513,6 +567,7 @@ class MainPage(QWidget):
         msgBox.setText(message)
         msgBox.setWindowTitle("경고")
         msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         msgBox.exec_()
         
     # [Func] create_inspection_history_tab
@@ -539,16 +594,15 @@ class MainPage(QWidget):
         search.setPlaceholderText("IP 주소 검색")
         search.setFixedWidth(200)
         search.textChanged.connect(self.SearchIP)
-        search.setStyleSheet("background-color: white;")
         topLayout.addWidget(search)
 
         layout.addLayout(topLayout)
         
         self.history_table = QTableWidget() # 테이블 생성
         self.history_table.setColumnCount(5) 
-        self.history_table.setHorizontalHeaderLabels(["날짜", "시스템 장치명", "대상 OS", "IP 주소", "상세 결과"])
-        self.history_table.setStyleSheet("background-color: white;")       
+        self.history_table.setHorizontalHeaderLabels(["날짜", "시스템 장치명", "대상 OS", "IP 주소", "상세 결과"])     
         self.history_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.history_table.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         self.history_table.setSortingEnabled(True) # 정렬 기능
         self.history_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         layout.addWidget(self.history_table)
@@ -652,7 +706,19 @@ class MainPage(QWidget):
             # '상세 결과' 버튼 추가
             detail_result_btn = QPushButton('상세 결과')
             detail_result_btn.clicked.connect(lambda _, row=row_position: self.DetailResult(row, item_data['targets']))
-
+            detail_result_btn.setStyleSheet("""
+                                     QPushButton {
+                                         color: #1A73E8;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #1A73E8;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    """)
             widget = QWidget()
             btn_layout = QHBoxLayout(widget)
             btn_layout.addWidget(detail_result_btn)
@@ -684,11 +750,20 @@ class MainPage(QWidget):
         dialog = QDialog(self) # 상세 결과 창
         dialog.setWindowTitle("상세 결과")
         dialog.resize(800, 600)
-        dialog.setStyleSheet("background-color: #232939; color: #F7F8FA")  # 대화 상자의 배경색을 하얀색으로 설정
+        dialog.setStyleSheet("background-color: #FFFFFF;")
         layout = QVBoxLayout()
 
-        header_label = QLabel(f"{date} | {os} | {ip}  점검 상세 결과") # 선택한 점검 이력의 정보 표시
+        header_label = QLabel(f"{date}  /  {os}  /  {ip}  점검 상세 결과") # 선택한 점검 이력의 정보 표시
+        font = QFont("나눔바른고딕", 10, QFont.Bold) 
+        header_label.setFont(font)
+        header_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(header_label)
+        
+        line = QFrame() # 선
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        line.setStyleSheet("color: #A6A6A6;")
+        layout.addWidget(line)
 
         # 상세 점검 결과 테이블
         self.detail_table = QTableWidget()
@@ -696,10 +771,22 @@ class MainPage(QWidget):
         self.detail_table.setHorizontalHeaderLabels(["점검 항목", "점검 내용", "결과 방식", "점검 결과", "세부 내용"])
         self.detail_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.detail_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.detail_table.setStyleSheet("background-color: white; color: #232939")  # 대화 상자의 배경색을 하얀색으로 설정
         # 테이블 초기화
         self.detail_table.setRowCount(0)
 
+        
+        table_font = QFont("나눔바른고딕", 8)
+        header_font = QFont("나눔바른고딕", 8, QFont.Bold)
+        header = self.detail_table.horizontalHeader()
+        header.setFont(header_font)
+        
+        # 열 길이 설정
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # 점검 항목
+        header.setSectionResizeMode(1, QHeaderView.Stretch)  # 점검 내용
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)  # 결과 방식
+        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # 점검 결과
+        header.setSectionResizeMode(4, QHeaderView.ResizeToContents)  # 세부 내용
+        
         # self.result_dict 순회하며 테이블에 데이터 추가
         for target_id, target_info in targets_data.items():
             # 세부 내용 데이터 추가
@@ -707,13 +794,44 @@ class MainPage(QWidget):
             self.detail_table.insertRow(row_position)
 
             # 데이터 삽입
-            self.detail_table.setItem(row_position, 0, QTableWidgetItem(target_id))
-            self.detail_table.setItem(row_position, 1, QTableWidgetItem(target_info[0]))  # 설명
-            self.detail_table.setItem(row_position, 2, QTableWidgetItem(target_info[1]))  # 결과 유형
-            self.detail_table.setItem(row_position, 3, QTableWidgetItem(target_info[5]))  # 결과
+            item_0 = QTableWidgetItem(target_id)
+            item_0.setFont(table_font)
+            item_0.setTextAlignment(Qt.AlignCenter)
+            self.detail_table.setItem(row_position, 0, item_0)
+
+            item_1 = QTableWidgetItem(target_info[0])  # 설명
+            item_1.setFont(table_font)
+            item_1.setTextAlignment(Qt.AlignCenter)
+            self.detail_table.setItem(row_position, 1, item_1)
+
+            item_2 = QTableWidgetItem(target_info[1])  # 결과 유형
+            item_2.setFont(table_font)
+            item_2.setTextAlignment(Qt.AlignCenter)
+            self.detail_table.setItem(row_position, 2, item_2)
+
+            item_3 = QTableWidgetItem(target_info[5])  # 결과
+            item_3.setFont(table_font)
+            item_3.setTextAlignment(Qt.AlignCenter)
+            self.detail_table.setItem(row_position, 3, item_3)
 
             # 세부 내용 버튼 추가
             detail_btn = QPushButton('세부 내용')
+            btn_font = QFont("나눔바른고딕", 8)
+            detail_btn.setFont(btn_font)
+            detail_btn.setFixedSize(53, 23)
+            detail_btn.setStyleSheet("""
+                                     QPushButton {
+                                         color: #1A73E8;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #1A73E8;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    """)
             detail_btn.clicked.connect(lambda _, row=row_position: self.ItemDetails(row, target_info))
 
             widget = QWidget()
@@ -724,83 +842,16 @@ class MainPage(QWidget):
             widget.setLayout(btn_layout)
 
             self.detail_table.setCellWidget(row_position, 4, widget)
-                        
+            
+        self.detail_table.setStyleSheet("""
+            QTableWidget {
+                border: none; }
+        """)
+                    
         layout.addWidget(self.detail_table)
 
         dialog.setLayout(layout)
         dialog.exec_()
-        
-    # [Func] ItemDetails
-    # [DESC] 점검 항목의 세부 내용을 보여줌
-    # [TODO] 에러 테스트
-    # [ISSUE] None    
-    def ItemDetails(self, row, target_info):
-        # 선택된 행의 데이터 가져오기
-        info = self.detail_table.item(row, 0).text()        # 점검 항목
-        description = self.detail_table.item(row, 1).text() # 점검 내용
-        result_type = self.detail_table.item(row, 2).text() # 결과 방식
-        result = self.detail_table.item(row, 3).text()      # 점검 결과
-        
-        detail_dialog = QDialog(self)  # 세부 내용 창
-        detail_dialog.setWindowTitle("세부 내용")
-        detail_dialog.resize(800, 600)
-        detail_dialog.setStyleSheet("background-color: #232939; color: #F7F8FA")  # 대화 상자의 배경색을 하얀색으로 설정        
-        layout = QVBoxLayout()
-
-        # 점검 항목
-        info_label = QLabel("점검 항목")
-        info_content = QLineEdit()
-        info_content.setText(info)
-        info_content.setReadOnly(True)
-        layout.addWidget(info_label)
-        layout.addWidget(info_content)
-
-        # 점검 내용
-        description_label = QLabel("점검 내용")
-        description_content = QLineEdit()
-        description_content.setText(description)
-        description_content.setReadOnly(True)
-        layout.addWidget(description_label)
-        layout.addWidget(description_content)
-
-        # 결과 방식
-        result_type_label = QLabel("결과 방식")
-        result_type_content = QLineEdit()
-        result_type_content.setText(result_type)
-        result_type_content.setReadOnly(True)
-        layout.addWidget(result_type_label)
-        layout.addWidget(result_type_content)
-
-        # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
-        for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], [target_info[i] for i in [2, 3, 4, 6, 7]]):
-            label = QLabel(label_text)
-            if label_text == "CommandString":
-                content = QTextEdit()
-                content.setReadOnly(True)
-                content.setFixedHeight(100)
-            else:
-                content = QLineEdit()
-                content.setReadOnly(True)
-            content.setText(content_text)
-            content.setStyleSheet("background-color: white; color: #232939")
-            layout.addWidget(label)
-            layout.addWidget(content)
-
-        # 점검 결과
-        result_label = QLabel("점검 결과")
-        result_content = QLineEdit()
-        result_content.setText(result)
-        result_content.setReadOnly(True)
-        layout.addWidget(result_label)
-        layout.addWidget(result_content)
-
-        info_content.setStyleSheet("background-color: white; color: #232939")
-        description_content.setStyleSheet("background-color: white; color: #232939")
-        result_type_content.setStyleSheet("background-color: white; color: #232939")
-        result_content.setStyleSheet("background-color: white; color: #232939")
-
-        detail_dialog.setLayout(layout)
-        detail_dialog.exec_()
 
 class CenterAlignDelegate(QStyledItemDelegate):
     def initStyleOption(self, option, index):
@@ -848,9 +899,6 @@ class InspectionListPage(QWidget):
         layout.addWidget(self.inspection_target_table)
         
         layout.addWidget(self.inspection_list_table)
-
-        self.setStyleSheet("background-color: #F7F8FA;")  # 전체 배경 색상 설정  
-
         # inspection_list_table 정렬 설정 
         self.inspection_list_table.horizontalHeader().setDefaultAlignment(Qt.AlignHCenter)
         self.inspection_list_table.verticalHeader().setDefaultAlignment(Qt.AlignVCenter)
@@ -861,20 +909,65 @@ class InspectionListPage(QWidget):
         # 뒤로 가기 버튼 추가 및 버튼 레이아웃에 설정
         btnBack = QPushButton("<")
         btnBack.setFixedSize(30, 30)
-        btnBack.setStyleSheet("background-color: #F7F8FA; color: 232939")
+        btnBack.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        btnBack.setStyleSheet("""
+                                     QPushButton {
+                                         color: #1A73E8;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #1A73E8;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    """)
         btnBack.clicked.connect(self.goBack)
         buttonLayout.addWidget(btnBack)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
         
         # "점검 실행" 버튼 생성 및 버튼 레이아웃에 설정
         executeButton = QPushButton("점검 실행")
         executeButton.setFixedSize(100, 30)  # 버튼 크기 설정
-        executeButton.setStyleSheet("background-color: #F7F8FA; color: 232939")
+        executeButton.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        executeButton.setStyleSheet("""
+            QPushButton {
+                color: #FFFFFF;
+                background-color: #1A73E8;
+                border: 1px solid #1A73E8;  /* 테두리 색상을 #1A73E8로 설정 */
+                border-radius: 4px;
+                font-size: 15px;
+            }
+            QPushButton:hover {
+                color: #1A73E8;
+                background-color: #FFFFFF;
+                border: 1px solid #1A73E8;  /* 호버 상태에서도 테두리 색상을 유지 */
+            }
+            QPushButton:pressed {
+                color: #1A73E8;
+                background-color: #FFFFFF;
+                border: 1px solid #1A73E8;  /* 눌린 상태에서도 테두리 색상을 유지 */
+            }
+        """)
         executeButton.clicked.connect(self.executeInspection)  # 클릭 시 executeInspection 메서드 호출
 
         # "규제 지침 등록" 버튼 생성 및 버튼 레이아웃에 설정
         add_btn = QPushButton("규제 지침 등록") # '+' 버튼 생성 및 버튼 레이아웃에 설정
         add_btn.setFixedSize(120, 30)
-        add_btn.setStyleSheet("background-color: #F7F8FA; color: #232939")
+        add_btn.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        add_btn.setStyleSheet("""
+                                     QPushButton {
+                                         color: #1A73E8;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #1A73E8;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    """)
         add_btn.clicked.connect(self.AddInspectionList) # 규제 지침 등록 창 열기
         buttonLayout.addWidget(add_btn)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
         # 버튼을 가운데로 정렬하기 위해 빈 공간 추가
@@ -884,11 +977,11 @@ class InspectionListPage(QWidget):
 
         dummy1 = QLabel("")
         dummy1.setFixedSize(30, 30)
-        dummy1.setStyleSheet("background-color: #232939")
+        dummy1.setStyleSheet("background-color: #F0F0F0")
         buttonLayout.addWidget(dummy1, alignment=Qt.AlignmentFlag.AlignRight)
         dummy2 = QLabel("")
         dummy2.setFixedSize(120, 30)
-        dummy2.setStyleSheet("background-color: #232939")
+        dummy2.setStyleSheet("background-color: #F0F0F0")
         buttonLayout.addWidget(dummy2, alignment=Qt.AlignmentFlag.AlignRight)
 
         # 버튼 레이아웃을 메인 레이아웃에 추가하여 정렬
@@ -1173,6 +1266,21 @@ class InspectionListPage(QWidget):
         # 삭제 버튼 추가
         btnDelete = QPushButton("삭제")
         btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
+        btnDelete.setFixedSize(70, 34)
+        btnDelete.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        btnDelete.setStyleSheet("""
+                                     QPushButton {
+                                         color: #ea4335;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #ea4335;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #ea4335; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #ea4335; }
+                                    """)
         self.inspection_list_table.setCellWidget(rowPosition, 6, btnDelete)
         self.inspection_list_table.setItem(rowPosition, 7, QTableWidgetItem(plugin))
         self.inspection_list_table.setColumnHidden(7, True)
@@ -1267,17 +1375,15 @@ class InspectionProgressPage(QWidget):
         self.target_list = list()
         self.plugin_dict = dict()
         
-        
         self.main_layout = QVBoxLayout()  # QVBoxLayout 인스턴스 생성
         self.setLayout(self.main_layout)  # 위젯의 레이아웃을 main_layout으로 설정
-
         
         self.initUI()
 
     
     # [Func] initUI
     # [DESC] UI 초기화 메서드
-    # [TODO] None
+    # [TODO] % 바 밖에 배치로 수정하기
     # [ISSUE] None
     def initUI(self):
         
@@ -1286,16 +1392,25 @@ class InspectionProgressPage(QWidget):
         self.progressBar.setGeometry(30, 40, 200, 25)
         self.progressBar.setMaximum(100)  # 프로그레스 바의 최대 값을 100으로 설정
         self.progressBar.setValue(0)  # 초기 프로그레스 바 값 설정
+        self.progressBar.setFixedSize(970, 20)
+        self.progressBar.setStyleSheet("QProgressBar {background-color: #C0C0C0; text-align: right;}"
+                           "QProgressBar::chunk {background-color: #1A73E8;}")
+
         self.main_layout.addWidget(self.progressBar)  # main_layout에 프로그레스 바 추가
 
-        
         self.progress_table = QTableWidget()
-
         self.progress_table.setColumnCount(7)
         self.progress_table.setHorizontalHeaderLabels(['시스템 장치명', '점검 항목', '점검 내용', '결과 방식', '점검 결과', '상세 결과'])
         self.progress_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.progress_table.horizontalHeader().setStretchLastSection(True)
-        
+
+        # 각 열 너비 조정
+        self.progress_table.setColumnWidth(0, 110)  # 시스템 장치명 열 너비
+        self.progress_table.setColumnWidth(1, 200)  # 점검 항목 열 너비
+        self.progress_table.setColumnWidth(2, 440)  # 점검 내용 열 너비
+        self.progress_table.setColumnWidth(3, 80)  # 결과 방식 열 너비
+        self.progress_table.setColumnWidth(4, 80)  # 점검 결과 열 너비
+        self.progress_table.setColumnWidth(5, 80)  # 상세 결과 열 너비    
         self.main_layout.addWidget(self.progress_table)
         
         # 버튼 레이아웃 생성
@@ -1305,17 +1420,60 @@ class InspectionProgressPage(QWidget):
         btnBack = QPushButton("<")
         btnBack.setFixedSize(30, 30)
         btnBack.clicked.connect(self.goBack)
+        btnBack.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        btnBack.setStyleSheet("""
+                                     QPushButton {
+                                         color: #1A73E8;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #1A73E8;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    """)
+        btnBack.clicked
         buttonLayout.addWidget(btnBack)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
 
         # "홈으로" 버튼 생성 및 버튼 레이아웃에 설정
         homeButton = QPushButton("홈으로")
-        homeButton.setFixedSize(50, 30)  # 버튼 크기 설정
+        homeButton.setFixedSize(60, 30)  # 버튼 크기 설정
+        homeButton.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        homeButton.setStyleSheet("""
+                                     QPushButton {
+                                         color: #1A73E8;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #1A73E8;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    """)
         homeButton.clicked.connect(self.returnToHome)  # 클릭 시 returnToHome 메서드 호출
         buttonLayout.addWidget(homeButton)
         
         # "취소" 버튼 생성 및 버튼 레이아웃에 설정
         cancelButton = QPushButton("취소")
         cancelButton.setFixedSize(50, 30)  # 버튼 크기 설정
+        cancelButton.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        cancelButton.setStyleSheet("""
+                                     QPushButton {
+                                         color: #1A73E8;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #1A73E8;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    """)
         cancelButton.clicked.connect(self.cancelInspection)  # 클릭 시 cancelInspection메서드 호출
        
         # 버튼을 가운데로 정렬하기 위해 빈 공간 추가
@@ -1359,7 +1517,7 @@ class InspectionProgressPage(QWidget):
             
     def addProgressTable(self, result_data):
         if result_data is None or len(result_data) == 0:
-             return
+            return
         
         # '시스템 장치명', '점검 항목', '점검 내용', '결과 방식', '점검 결과'
         # 나머지 데이터 추가
@@ -1373,20 +1531,34 @@ class InspectionProgressPage(QWidget):
                     item = QTableWidgetItem("성공" if data else "실패")
                     item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
                     item.setTextAlignment(Qt.AlignCenter)
-                    item.setForeground(QBrush(QColor(255, 255, 255)))
+                    item.setForeground(QBrush(QColor(0 , 0, 0)))
                     self.progress_table.setItem(rowPosition, i, item)
                 else:
                     item = QTableWidgetItem(data if data else "")
                     item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
                     item.setTextAlignment(Qt.AlignCenter)
-                    item.setForeground(QBrush(QColor(255, 255, 255)))
+                    item.setForeground(QBrush(QColor(0 , 0, 0)))
                     self.progress_table.setItem(rowPosition, i, item)
             detail_result_btn = QPushButton("상세 결과")
+            detail_result_btn.setFixedSize(75, 35)
+            detail_result_btn.setStyleSheet("""
+                                     QPushButton {
+                                         color: #1A73E8;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #1A73E8;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    """)
+            detail_result_btn.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
             detail_result_btn.clicked.connect(lambda: self.ItemDetails(detail_result_btn))
             self.progress_table.setCellWidget(rowPosition, 5, detail_result_btn)
             self.progress_table.setItem(rowPosition, 6, QTableWidgetItem(str(result_id)))
             self.progress_table.setColumnHidden(6, True)
-    # [Func] ItemDetails
     # [DESC] 점검 항목의 세부 내용을 보여줌
     # [TODO] 에러 테스트
     # [ISSUE] None    
