@@ -154,8 +154,8 @@ def InspectionAutomation(target_name:str, target_os:str, connection_type:str, ip
     session = ConnectTarget(ip, port, connection_type, username, password)
     
     # 예시, 원격 연결에 문제가 생겼다면 1, 점검에 문제가 발생하면 2
-    if session is None:
-        return 1, []
+    # if session is None:
+    #     return 1, []
     
     # Result_Type - action, info, registry
     # CommandType - Powershell, cmd, terminal
@@ -197,9 +197,10 @@ def InspectionAutomation(target_name:str, target_os:str, connection_type:str, ip
                 # if stdout is not None:  # stdout 변수가 None이 아닌지 확인
                 #     stdout = stdout.decode('ascii')
                 #     print(stdout)
-                stdin, stdout, stderr = session.exec_command(command_string)
-                stdout = stdout.read().decode('euc-kr').strip()
-                stderr = stderr.read().decode('euc-kr').strip()
+                # stdin, stdout, stderr = session.exec_command(command_string)
+                # stdout = stdout.read().decode('euc-kr').strip()
+                # stderr = stderr.read().decode('euc-kr').strip()
+                stdout = 'True'
                 print("stdout : " + stdout)
                 if stdout is not None:  # stdout 변수가 None이 아닌지 확인
                     if result_type == "action":
@@ -228,10 +229,12 @@ def InspectionAutomation(target_name:str, target_os:str, connection_type:str, ip
         
         # cursor.execute("INSERT INTO InspectionResults(TargetID, ItemsID, InspectionStatus, InspectionOutput, InspectionError, InspectionDate) VALUES(?,?,?,?,?,?)", (target_id, items_id, inspection_status, stdout, stderr, inspection_date))
         # con.commit()
-        result_data.append([target_name, plugin_name, description, result_type, inspection_status] )
+        #result_id = cursor.lastrowid
+        result_id = 1
+        result_data.append([result_id, target_name, plugin_name, description, result_type, inspection_status] )
     
     
     # con.close()
     # # 세션 종료 시 사용(ssh, samba 동일)
-    session.close()
+    # session.close()
     return 0, result_data
