@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (QVBoxLayout, QRadioButton, QComboBox, QLineEdit, QA
  QCheckBox, QTableWidget, QHBoxLayout, QTableWidgetItem, QSpinBox, QTextEdit, QScrollArea,
  QHeaderView, QAbstractItemView, QGridLayout, QProgressBar, QGroupBox, QStyledItemDelegate)
 from PyQt5.QtCore import Qt, QRect, pyqtSlot, QRect
-from PyQt5.QtGui import QPainter, QTransform, QFont, QBrush, QColor
+from PyQt5.QtGui import QPainter, QTransform, QFont, QBrush, QColor, QPixmap
 
 sys.path.append(os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ))
 
@@ -200,6 +200,8 @@ class MainPage(QWidget):
         os_type_group_box.setLayout(os_type_layout)
         os_type_group_box.setFixedHeight(60)  # 고정된 높이 설정
 
+        # 접속 방식 선택 박스
+        connection_type_group_box = QGroupBox("접속 방식 선택")
         # 접속 방식 선택 박스
         connection_type_group_box = QGroupBox("접속 방식 선택")
         # NanumBarunGothic 폰트로 설정하고 볼드 처리
@@ -883,12 +885,7 @@ class MainPage(QWidget):
             widget.setLayout(btn_layout)
 
             self.detail_table.setCellWidget(row_position, 4, widget)
-            
-        self.detail_table.setStyleSheet("""
-            QTableWidget {
-                border: none; }
-        """)
-                    
+        
         layout.addWidget(self.detail_table)
 
         dialog.setLayout(layout)
@@ -909,45 +906,54 @@ class MainPage(QWidget):
         detail_dialog.setWindowTitle("세부 내용")
         detail_dialog.resize(800, 600)
 
-        # 폰트 설정
         font = QFont("NanumBarunGothic", 9)
         bold_font = QFont("NanumBarunGothic", 9, QFont.Bold)
-
+        result_font = QFont("NanumBarunGothic", 20, QFont.Bold)
         layout = QVBoxLayout()
 
-        # 점검 결과
-        result_label = QLabel("점검 결과")
-        result_label.setFont(bold_font)
-        result_content = QLabel(result)
-        result_content.setFont(font)
+        # 점검 결과에 따른 이미지와 글씨색 설정
+        if result == "성공":
+            result_icon = QLabel()
+            result_icon.setPixmap(QPixmap("interface/o.png").scaled(30, 30, Qt.KeepAspectRatio))
+            result_content = QLabel(result)
+            result_content.setFont(result_font)
+            result_content.setStyleSheet("color: #00B050;")
+        else: # 실패
+            result_icon = QLabel()
+            result_icon.setPixmap(QPixmap("interface/x.png").scaled(30, 30, Qt.KeepAspectRatio))
+            result_content = QLabel(result)
+            result_content.setFont(result_font)
+            result_content.setStyleSheet("color: #FF0000;")
+
         result_content.setFixedHeight(50)
-    
-        # 점검 결과를 중앙에 배치하기 위한 QHBoxLayout
         result_layout = QHBoxLayout()
-        result_layout.addStretch()  # 왼쪽에 빈 공간 추가
-        result_layout.addWidget(result_label)
+        result_layout.addStretch()
+        result_layout.addWidget(result_icon)
         result_layout.addWidget(result_content)
-        result_layout.addStretch()  # 오른쪽에 빈 공간 추가
+        result_layout.addStretch()
         layout.addLayout(result_layout)
-        
-        # 점검 결과, 점검 항목, 점검 내용, 결과 방식도 CommandName, CommandType 형식으로 중앙 정렬 처리
+    
+        fixed_width = 700
+
+        # 점검 결과, 점검 항목, 점검 내용, 결과 방식
         labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
         contents = [info, description, result_type]
 
         for label_text, content_text in zip(labels_texts, contents):
             item_layout = QHBoxLayout()
-        
+    
             label = QLabel(label_text)
             label.setFont(bold_font)
             content = QLineEdit()
             content.setFont(font)
             content.setText(content_text)
             content.setReadOnly(True)
-        
+            content.setFixedWidth(fixed_width)
+    
             item_layout.addWidget(label)
             item_layout.addWidget(content)
-        
-            layout.addLayout(item_layout)  # QVBoxLayout에 QHBoxLayout 추가
+    
+            layout.addLayout(item_layout)
 
         # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
         for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], [target_info[i] for i in [2, 3, 4, 6, 7]]):
@@ -959,20 +965,23 @@ class MainPage(QWidget):
                 content.setFont(font)
                 content.setReadOnly(True)
                 content.setFixedHeight(100)
+                content.setFixedWidth(fixed_width)
             else:
                 content = QLineEdit()
                 content.setReadOnly(True)
                 content.setFont(font)
+                content.setFixedWidth(fixed_width)
             content.setText(content_text)
-            content.setStyleSheet("background-color: white; color: #232939")
-        
+            content.setStyleSheet("background-color: white;")
+    
             item_layout.addWidget(label)
             item_layout.addWidget(content)
-        
-            layout.addLayout(item_layout)  # QVBoxLayout에 QHBoxLayout 추가
+    
+            layout.addLayout(item_layout)
 
         detail_dialog.setLayout(layout)
         detail_dialog.exec_()
+
 
 class CenterAlignDelegate(QStyledItemDelegate):
     def initStyleOption(self, option, index):
@@ -1563,7 +1572,7 @@ class InspectionProgressPage(QWidget):
 
         self.progress_table = QTableWidget()
         self.progress_table.setColumnCount(7)
-        self.progress_table.setHorizontalHeaderLabels(['시스템 장치명', '점검 항목', '점검 내용', '결과 방식', '점검 결과', '상세 결과'])
+        self.progress_table.setHorizontalHeaderLabels(['시스템 장치명', '점검 항목', '점검 내용', '결과 방식', '점검 결과', '세부 내용'])
         self.progress_table.horizontalHeader().setStretchLastSection(True)
 
         # 헤더 레이블의 폰트를 설정합니다.
@@ -1709,7 +1718,7 @@ class InspectionProgressPage(QWidget):
                     item.setTextAlignment(Qt.AlignCenter)
                     item.setForeground(QBrush(QColor(0 , 0, 0)))
                     self.progress_table.setItem(rowPosition, i, item)
-            detail_result_btn = QPushButton("상세 결과")
+            detail_result_btn = QPushButton("세부 내용")
             detail_result_btn.setFixedSize(65, 25)
             detail_result_btn.setStyleSheet("""
                                      QPushButton {
@@ -1736,6 +1745,7 @@ class InspectionProgressPage(QWidget):
             self.progress_table.setCellWidget(rowPosition, 5, widget)
             self.progress_table.setItem(rowPosition, 6, QTableWidgetItem(str(result_id)))
             self.progress_table.setColumnHidden(6, True)
+            
     # [Func] ItemDetails
     # [DESC] 점검 항목의 세부 내용을 보여줌
     # [TODO] 에러 테스트
@@ -1747,6 +1757,10 @@ class InspectionProgressPage(QWidget):
         detail_dialog = QDialog(self)  # 세부 내용 창
         detail_dialog.setWindowTitle("세부 내용")
         detail_dialog.resize(800, 600)
+        
+        font = QFont("NanumBarunGothic", 9)
+        bold_font = QFont("NanumBarunGothic", 9, QFont.Bold)
+        result_font = QFont("NanumBarunGothic", 20, QFont.Bold)
         layout = QVBoxLayout()
         
         global path_database
@@ -1790,53 +1804,75 @@ class InspectionProgressPage(QWidget):
         result_type = self.progress_table.item(item.row(), 3).text() # 결과 방식
         result = self.progress_table.item(item.row(), 4).text()      # 점검 결과
         
+        # 점검 결과에 따른 이미지와 글씨색 설정
+        if result == "성공":
+            result_icon = QLabel()
+            result_icon.setPixmap(QPixmap("interface/o.png").scaled(30, 30, Qt.KeepAspectRatio))
+            result_content = QLabel(result)
+            result_content.setFont(result_font)
+            result_content.setStyleSheet("color: #00B050;")
+        else: # "실패"
+            result_icon = QLabel()
+            result_icon.setPixmap(QPixmap("interface/x.png").scaled(30, 30, Qt.KeepAspectRatio))
+            result_content = QLabel(result)
+            result_content.setFont(result_font)
+            result_content.setStyleSheet("color: #FF0000;")
+
+        result_content.setFixedHeight(50) 
+        result_layout = QHBoxLayout()
+        result_layout.addStretch()
+        result_layout.addWidget(result_icon)
+        result_layout.addWidget(result_content)
+        result_layout.addStretch()
+        layout.addLayout(result_layout)
+
+        fixed_width = 700
         
+        # 점검 결과, 점검 항목, 점검 내용, 결과 방식
+        labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
+        contents = [info, description, result_type]
 
-        # 점검 항목
-        info_label = QLabel("점검 항목")
-        info_content = QLineEdit()
-        info_content.setText(info)
-        info_content.setReadOnly(True)
-        layout.addWidget(info_label)
-        layout.addWidget(info_content)
+        for label_text, content_text in zip(labels_texts, contents):
+            item_layout = QHBoxLayout()
+    
+            label = QLabel(label_text)
+            label.setFont(bold_font)
+            content = QLineEdit()
+            content.setFont(font)
+            content.setText(content_text)
+            content.setReadOnly(True)
+            content.setFixedWidth(fixed_width)
+    
+            item_layout.addWidget(label)
+            item_layout.addWidget(content)
+    
+            layout.addLayout(item_layout)
 
-        # 점검 내용
-        description_label = QLabel("점검 내용")
-        description_content = QLineEdit()
-        description_content.setText(description)
-        description_content.setReadOnly(True)
-        layout.addWidget(description_label)
-        layout.addWidget(description_content)
-
-        # 결과 방식
-        result_type_label = QLabel("결과 방식")
-        result_type_content = QLineEdit()
-        result_type_content.setText(result_type)
-        result_type_content.setReadOnly(True)
-        layout.addWidget(result_type_label)
-        layout.addWidget(result_type_content)
         inspection_targets = inspection_targets + [inspection_results[4], inspection_results[5]]
         # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
         for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], inspection_targets):
+            item_layout = QHBoxLayout()     
             label = QLabel(label_text)
+            label.setFont(bold_font)
             if label_text == "CommandString":
                 content = QTextEdit()
+                content.setFont(font)
                 content.setReadOnly(True)
                 content.setFixedHeight(100)
+                content.setFixedWidth(fixed_width)
             else:
                 content = QLineEdit()
                 content.setReadOnly(True)
+                content.setFont(font)
+                content.setFixedWidth(fixed_width)
             content.setText(content_text)
-            layout.addWidget(label)
-            layout.addWidget(content)
+            content.setStyleSheet("background-color: white;")
+    
+            item_layout.addWidget(label)
+            item_layout.addWidget(content)
+    
+            layout.addLayout(item_layout)
 
-        # 점검 결과
-        result_label = QLabel("점검 결과")
-        result_content = QLineEdit()
-        result_content.setText(result)
-        result_content.setReadOnly(True)
-        layout.addWidget(result_label)
-        layout.addWidget(result_content)
 
         detail_dialog.setLayout(layout)
         detail_dialog.exec_()
