@@ -630,13 +630,15 @@ class MainPage(QWidget):
         self.filter.addItem("Windows")
         self.filter.addItem("Linux")
         self.filter.setFixedWidth(200)
+        self.filter.setFont(QFont("NanumBarunGothic", 9))
         topLayout.addWidget(self.filter) 
         self.filter.currentIndexChanged.connect(self.FilterTable)
 
         search = QLineEdit() # 검색 필드
         search.setPlaceholderText("IP 주소 검색")
         search.setFixedWidth(200)
-        search.textChanged.connect(self.SearchIP)
+        search.setFont(QFont("NanumBarunGothic", 9))
+        search.returnPressed.connect(lambda: self.SearchIP(search.text()))
         topLayout.addWidget(search)
 
         layout.addLayout(topLayout)
@@ -645,7 +647,8 @@ class MainPage(QWidget):
         self.history_table.setColumnCount(5) 
         self.history_table.setHorizontalHeaderLabels(["날짜", "시스템 장치명", "대상 OS", "IP 주소", "상세 결과"])     
         self.history_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.history_table.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        self.history_table.horizontalHeader().setFont(QFont("NanumBarunGothic", 8, QFont.Bold))
+        self.history_table.setFont(QFont("NanumBarunGothic"))
         self.history_table.setSortingEnabled(True) # 정렬 기능
         self.history_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         layout.addWidget(self.history_table)
@@ -734,7 +737,7 @@ class MainPage(QWidget):
                 self.result_dict[item]["targets"] = target_result
         
         con.close()
-        
+            
         for item_id, item_data in self.result_dict.items():
             # 날짜, 대상 OS, IP 주소 데이터 삽입
             row_position = self.history_table.rowCount()
@@ -748,6 +751,9 @@ class MainPage(QWidget):
 
             # '상세 결과' 버튼 추가
             detail_result_btn = QPushButton('상세 결과')
+            btn_font = QFont("NanumBarunGothic", 8)
+            detail_result_btn.setFont(btn_font)
+            detail_result_btn.setFixedSize(57, 27)
             detail_result_btn.clicked.connect(lambda _, row=row_position: self.DetailResult(row, item_data['targets']))
             detail_result_btn.setStyleSheet("""
                                      QPushButton {
@@ -775,7 +781,7 @@ class MainPage(QWidget):
             for column in range(self.history_table.columnCount()):
                 item = self.history_table.item(row_position, column)
                 if item is not None:
-                    item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
+                    item.setFont(QFont("NanumBarunGothic", 8)) 
                     item.setTextAlignment(Qt.AlignCenter)
 
             
@@ -1095,8 +1101,8 @@ class InspectionListPage(QWidget):
 
         # "규제 지침 등록" 버튼 생성 및 버튼 레이아웃에 설정
         add_btn = QPushButton("규제 지침 등록") # '+' 버튼 생성 및 버튼 레이아웃에 설정
-        add_btn.setFixedSize(120, 30)
-        add_btn.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        add_btn.setFixedSize(100, 30)
+        add_btn.setFont(QFont("NanumBarunGothic", 10, QFont.Bold))  
         add_btn.setStyleSheet("""
                                      QPushButton {
                                          color: #1A73E8;
@@ -1158,7 +1164,7 @@ class InspectionListPage(QWidget):
         self.dialog.setLayout(layout)
 
         fields = ["PluginName", "TargetOS", "Result_Type", "Info", "Description", "CommandCount", "CommandName",
-                  "CommandType", "CommandString"]
+                "CommandType", "CommandString"]
         input_types = [QLineEdit, QComboBox, QComboBox, QLineEdit, QTextEdit, QSpinBox, QLineEdit, QComboBox, QTextEdit]  # Description, CommandString을 QTextEdit로 변경
 
         options = {
@@ -1169,11 +1175,17 @@ class InspectionListPage(QWidget):
 
         self.input_fields = {}  # 입력 필드를 저장할 딕셔너리
 
+        # 폰트 설정
+        font = QFont("NanumBarunGothic")
+        bold_font = QFont("NanumBarunGothic", 9, QFont.Bold)
+
         for field, input_type in zip(fields, input_types):
             label = QLabel(field)
+            label.setFont(bold_font)
             if input_type == QTextEdit:  # TextEdit인 경우
                 input_field = QScrollArea()  # 스크롤
                 text_edit = QTextEdit()
+                text_edit.setFont(font) 
                 text_edit.setAcceptRichText(False)
                 text_edit.setMinimumHeight(200)
                 input_field.setWidget(text_edit)
@@ -1181,6 +1193,7 @@ class InspectionListPage(QWidget):
                 self.input_fields[field] = text_edit  # QTextEdit을 딕셔너리에 저장
             else:
                 input_field = input_type()
+                input_field.setFont(font)
                 if isinstance(input_field, QComboBox):
                     if field in options:
                         for option in options[field]:
@@ -1192,7 +1205,21 @@ class InspectionListPage(QWidget):
         btn_layout = QHBoxLayout()  # 버튼 레이아웃
         btn_layout.addStretch()
         save_btn = QPushButton('저장')  # '저장' 버튼 추가
+        save_btn.setFont(bold_font) 
         save_btn.setFixedSize(40, 30)
+        save_btn.setStyleSheet("""
+                                     QPushButton {
+                                         color: #1A73E8;
+                                         background-color: #FFFFFF;
+                                         border: 1px solid #1A73E8;
+                                         border-radius: 4px;}
+                                     QPushButton:hover {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    QPushButton:pressed {
+                                         color: #FFFFFF;
+                                         background-color: #1A73E8; }
+                                    """)
         save_btn.clicked.connect(self.addNewPlugin)  # 클릭 이벤트에 함수 연결
         btn_layout.addWidget(save_btn)
         btn_layout.addStretch()
@@ -1212,6 +1239,12 @@ class InspectionListPage(QWidget):
                         input_field.currentText() if isinstance(input_field, QComboBox) else 
                         None
                         for field, input_field in self.input_fields.items()}
+        
+        required_fields = ["PluginName", "TargetOS", "Result_Type", "Info", "Description", "CommandCount", "CommandName", "CommandType", "CommandString"]
+        if any(input_values[field] in [None, ""] for field in required_fields):
+            self.ShowAlert("모든 항목을 입력해주세요.")
+            return
+        
         if input_values['CommandType'] == 'Powershell':
             value = input_values.get("CommandString")
             input_values['CommandString'] = f"powershell.exe -Command \"{value}\""
@@ -1511,6 +1544,7 @@ class InspectionListPage(QWidget):
         msgBox.setText(message)
         msgBox.setWindowTitle("경고")
         msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.setFont(QFont("NanumBarunGothic"))
         msgBox.exec_()
 
 # [CLASS] InspectionProgressPage
@@ -1922,7 +1956,8 @@ class InspectionProgressPage(QWidget):
         msgBox.setText(message)
         msgBox.setWindowTitle("경고")
         msgBox.setStandardButtons(QMessageBox.Ok)
-        msgBox.exec_()    
+        msgBox.setFont(QFont("NanumBarunGothic"))
+        msgBox.exec_()   
 # [Func] main
 # [DESC] 프로그램 진입점
 # [TODO] None
