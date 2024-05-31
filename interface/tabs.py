@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (QVBoxLayout, QRadioButton, QComboBox, QLineEdit, QA
  QTabWidget, QPushButton, QWidget, QTabBar, QMessageBox, QStackedWidget, QDialog, QLabel, QFrame,
  QCheckBox, QTableWidget, QHBoxLayout, QTableWidgetItem, QSpinBox, QTextEdit, QScrollArea,
  QHeaderView, QAbstractItemView, QGridLayout, QProgressBar, QGroupBox, QStyledItemDelegate)
-from PyQt5.QtCore import Qt, QRect, pyqtSlot
+from PyQt5.QtCore import Qt, QRect, pyqtSlot, QRect
 from PyQt5.QtGui import QPainter, QTransform, QFont, QBrush, QColor
 
 sys.path.append(os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ))
@@ -34,20 +34,26 @@ class VerticalTabWidget(QTabBar):
     """
     수직 탭 위젯을 위한 커스텀 QTabBar
     """
-    # [Func] paintEvent
-    # [DESC] 수직 탭 텍스트를 그리기 위한 이벤트 핸들러
-    # [TODO] None
-    # [ISSUE] None
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMouseTracking(True)  # 마우스 트래킹 활성화
+
+        self.hoveredIndex = -1  # 마우스가 올라간 탭의 인덱스
+        self.pressedIndex = -1  # 클릭된 탭의 인덱스
+        self.selectedIndex = -1  # 선택된 탭의 인덱스
+
     def paintEvent(self, event):
         """
         각 탭의 텍스트를 그리는 이벤트 핸들러
         :param event: 이벤트 객체
         """
         painter = QPainter(self)
+        font = QFont("NanumBarunGothic", 11, QFont.Bold)  # 폰트 이름과 크기 설정
+        painter.setFont(font)
         
         for index in range(self.count()):
-            tab_rect = self.tabRect(index) # 현재 탭의 위치와 크기 정보
-            tab_text = self.tabText(index) # 현재 탭의 텍스트
+            tab_rect = self.tabRect(index)  # 현재 탭의 위치와 크기 정보
+            tab_text = self.tabText(index)  # 현재 탭의 텍스트
             
             painter.save()
             
@@ -55,11 +61,37 @@ class VerticalTabWidget(QTabBar):
             transform = QTransform()
             transform.translate(tab_rect.x() + tab_rect.width() / 2, tab_rect.y() + tab_rect.height() / 2)
             transform.translate(-tab_rect.height() / 2, -tab_rect.width() / 2)
-            
             painter.setTransform(transform)
+            
+            # 마우스 오버 및 클릭 상태에 따라 색상 변경
+            if index == self.selectedIndex:
+                painter.fillRect(QRect(0, 0, tab_rect.height(), tab_rect.width()), QColor('white'))
+            elif index == self.hoveredIndex:
+                painter.fillRect(QRect(0, 0, tab_rect.height(), tab_rect.width()), QColor('lightgray'))
+            
             painter.drawText(QRect(0, 0, tab_rect.height(), tab_rect.width()), Qt.AlignCenter, tab_text)
-        
-            painter.restore() 
+            painter.restore()
+
+    def mouseMoveEvent(self, event):
+        index = self.tabAt(event.pos())
+        if index != self.hoveredIndex:
+            self.hoveredIndex = index
+            self.update()
+
+    def leaveEvent(self, event):
+        self.hoveredIndex = -1
+        self.update()
+
+    def mousePressEvent(self, event):
+        self.pressedIndex = self.tabAt(event.pos())
+        self.update() 
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self.selectedIndex = self.tabAt(event.pos())
+        self.pressedIndex = -1
+        self.update()
+        super().mouseReleaseEvent(event)
 
 # [CLASS] MainWindow
 # [DESC] 메인 창 클래스
@@ -81,6 +113,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('취약점 점검 시스템')
         self.setGeometry(260, 150, 1035, 700)  # 테이블 글자 짤림 현상때문에 크기를 키움  
 
+        self.setStyleSheet("background-color: white;")
+        
         self.stackedWidget = QStackedWidget()
         self.setCentralWidget(self.stackedWidget)
 
@@ -130,17 +164,10 @@ class MainPage(QWidget):
         tab_widget.addTab(inspection_history_tab, "점검 이력\n조회")
         tab_widget.setTabPosition(QTabWidget.West) 
         tab_widget.setStyleSheet("""
-           QTabBar::tab {
-                height: 80px;
+            QTabBar::tab {
+                height: 100px;
                 width: 100px;
-                background: #37648D;
-                font-size: 12px;
-                font-weight: bold;
-                font-family: 'NanumBarunGothic';  /* 폰트 설정 수정 */
             }
-            QTabBar::tab:selected {
-                background: #5A9BD3;
-            } 
             """)
         layout.addWidget(tab_widget)
 
@@ -761,7 +788,7 @@ class MainPage(QWidget):
         layout = QVBoxLayout()
 
         header_label = QLabel(f"{date}  /  {os}  /  {ip}  점검 상세 결과") # 선택한 점검 이력의 정보 표시
-        font = QFont("나눔바른고딕", 10, QFont.Bold) 
+        font = QFont("NanumBarunGothic", 10, QFont.Bold) 
         header_label.setFont(font)
         header_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(header_label)
@@ -782,8 +809,8 @@ class MainPage(QWidget):
         self.detail_table.setRowCount(0)
 
         
-        table_font = QFont("나눔바른고딕", 8)
-        header_font = QFont("나눔바른고딕", 8, QFont.Bold)
+        table_font = QFont("NanumBarunGothic", 8)
+        header_font = QFont("NanumBarunGothic", 8, QFont.Bold)
         header = self.detail_table.horizontalHeader()
         header.setFont(header_font)
         
@@ -823,7 +850,7 @@ class MainPage(QWidget):
 
             # 세부 내용 버튼 추가
             detail_btn = QPushButton('세부 내용')
-            btn_font = QFont("나눔바른고딕", 8)
+            btn_font = QFont("NanumBarunGothic", 8)
             detail_btn.setFont(btn_font)
             detail_btn.setFixedSize(53, 23)
             detail_btn.setStyleSheet("""
@@ -870,59 +897,72 @@ class MainPage(QWidget):
         description = self.detail_table.item(row, 1).text() # 점검 내용
         result_type = self.detail_table.item(row, 2).text() # 결과 방식
         result = self.detail_table.item(row, 3).text()      # 점검 결과
-        
+
         detail_dialog = QDialog(self)  # 세부 내용 창
         detail_dialog.setWindowTitle("세부 내용")
         detail_dialog.resize(800, 600)
 
+        # 폰트 설정
+        font = QFont("NanumBarunGothic", 9)
+        bold_font = QFont("NanumBarunGothic", 9, QFont.Bold)
+
         layout = QVBoxLayout()
 
-        # 점검 항목
-        info_label = QLabel("점검 항목")
-        info_content = QLineEdit()
-        info_content.setText(info)
-        info_content.setReadOnly(True)
-        layout.addWidget(info_label)
-        layout.addWidget(info_content)
+        # 점검 결과
+        result_label = QLabel("점검 결과")
+        result_label.setFont(bold_font)
+        result_content = QLabel(result)
+        result_content.setFont(font)
+        result_content.setFixedHeight(50)
+    
+        # 점검 결과를 중앙에 배치하기 위한 QHBoxLayout
+        result_layout = QHBoxLayout()
+        result_layout.addStretch()  # 왼쪽에 빈 공간 추가
+        result_layout.addWidget(result_label)
+        result_layout.addWidget(result_content)
+        result_layout.addStretch()  # 오른쪽에 빈 공간 추가
+        layout.addLayout(result_layout)
+        
+        # 점검 결과, 점검 항목, 점검 내용, 결과 방식도 CommandName, CommandType 형식으로 중앙 정렬 처리
+        labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
+        contents = [info, description, result_type]
 
-        # 점검 내용
-        description_label = QLabel("점검 내용")
-        description_content = QLineEdit()
-        description_content.setText(description)
-        description_content.setReadOnly(True)
-        layout.addWidget(description_label)
-        layout.addWidget(description_content)
-
-        # 결과 방식
-        result_type_label = QLabel("결과 방식")
-        result_type_content = QLineEdit()
-        result_type_content.setText(result_type)
-        result_type_content.setReadOnly(True)
-        layout.addWidget(result_type_label)
-        layout.addWidget(result_type_content)
+        for label_text, content_text in zip(labels_texts, contents):
+            item_layout = QHBoxLayout()
+        
+            label = QLabel(label_text)
+            label.setFont(bold_font)
+            content = QLineEdit()
+            content.setFont(font)
+            content.setText(content_text)
+            content.setReadOnly(True)
+        
+            item_layout.addWidget(label)
+            item_layout.addWidget(content)
+        
+            layout.addLayout(item_layout)  # QVBoxLayout에 QHBoxLayout 추가
 
         # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
         for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], [target_info[i] for i in [2, 3, 4, 6, 7]]):
+            item_layout = QHBoxLayout()     
             label = QLabel(label_text)
+            label.setFont(bold_font)
             if label_text == "CommandString":
                 content = QTextEdit()
+                content.setFont(font)
                 content.setReadOnly(True)
                 content.setFixedHeight(100)
             else:
                 content = QLineEdit()
                 content.setReadOnly(True)
+                content.setFont(font)
             content.setText(content_text)
             content.setStyleSheet("background-color: white; color: #232939")
-            layout.addWidget(label)
-            layout.addWidget(content)
-
-        # 점검 결과
-        result_label = QLabel("점검 결과")
-        result_content = QLineEdit()
-        result_content.setText(result)
-        result_content.setReadOnly(True)
-        layout.addWidget(result_label)
-        layout.addWidget(result_content)
+        
+            item_layout.addWidget(label)
+            item_layout.addWidget(content)
+        
+            layout.addLayout(item_layout)  # QVBoxLayout에 QHBoxLayout 추가
 
         detail_dialog.setLayout(layout)
         detail_dialog.exec_()
@@ -1051,11 +1091,11 @@ class InspectionListPage(QWidget):
 
         dummy1 = QLabel("")
         dummy1.setFixedSize(30, 30)
-        dummy1.setStyleSheet("background-color: #F0F0F0")
+        dummy1.setStyleSheet("background-color: white")
         buttonLayout.addWidget(dummy1, alignment=Qt.AlignmentFlag.AlignRight)
         dummy2 = QLabel("")
         dummy2.setFixedSize(120, 30)
-        dummy2.setStyleSheet("background-color: #F0F0F0")
+        dummy2.setStyleSheet("background-color: white")
         buttonLayout.addWidget(dummy2, alignment=Qt.AlignmentFlag.AlignRight)
 
         # 버튼 레이아웃을 메인 레이아웃에 추가하여 정렬
