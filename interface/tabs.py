@@ -1114,6 +1114,13 @@ class InspectionListPage(QWidget):
         # 버튼 레이아웃을 메인 레이아웃에 추가하여 정렬
         layout.addLayout(buttonLayout)
 
+        # 각 열 너비 조정
+        self.inspection_target_table.setColumnWidth(0, 50)  
+        self.inspection_target_table.setColumnWidth(1, 222)  
+        self.inspection_target_table.setColumnWidth(2, 222)  
+        self.inspection_target_table.setColumnWidth(3, 222)  
+        self.inspection_target_table.setColumnWidth(4, 222)
+
         # 열 너비 설정
         self.inspection_list_table.setColumnWidth(0, 40)
         self.inspection_list_table.setColumnWidth(1, 70)
@@ -1517,7 +1524,7 @@ class InspectionProgressPage(QWidget):
     
     # [Func] initUI
     # [DESC] UI 초기화 메서드
-    # [TODO] % 바 밖에 배치로 수정하기
+    # [TODO] None
     # [ISSUE] None
     def initUI(self):
         
@@ -1530,6 +1537,8 @@ class InspectionProgressPage(QWidget):
         self.progressBar.setStyleSheet("""
             QProgressBar {
                 color: white;
+                font-family: 'NanumBarunGothic';
+                font-weight: bold;
                 background-color: #C0C0C0;  /* 배경색 유지 */
                 border: 1px solid #1A73E8;  /* 테두리 색상 추가 */
                 border-radius: 5px;  /* 테두리 둥글게 */
