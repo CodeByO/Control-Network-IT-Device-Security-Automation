@@ -1097,7 +1097,7 @@ class InspectionListPage(QWidget):
         # "규제 지침 등록" 버튼 생성 및 버튼 레이아웃에 설정
         add_btn = QPushButton("규제 지침 등록")
         add_btn.setFixedSize(110, 30)
-        add_btn.setFont(QFont("NanumBarunGothic", 10, QFont.Bold))  
+        add_btn.setFont(QFont("NanumBarunGothic", 9, QFont.Bold))  
         add_btn.setStyleSheet("""
                                 QPushButton {
                                     color: #1A73E8;
@@ -1326,16 +1326,40 @@ class InspectionListPage(QWidget):
         chkBoxLayout.setContentsMargins(0,0,0,0)
         self.inspection_list_table.setCellWidget(rowPosition, 0, chkBoxWidget)
         # 나머지 데이터 추가
-        self.inspection_list_table.setItem(rowPosition, 1, QTableWidgetItem(input_values["TargetOS"]))
-        self.inspection_list_table.setItem(rowPosition, 2, QTableWidgetItem(input_values["PluginName"]))
-        self.inspection_list_table.setItem(rowPosition, 3, QTableWidgetItem(input_values["Description"]))
-        self.inspection_list_table.setItem(rowPosition, 4, QTableWidgetItem(input_values["CommandType"]))
-        self.inspection_list_table.setItem(rowPosition, 5, QTableWidgetItem(input_values["Result_Type"]))
+        data_fields = ["TargetOS", "PluginName", "Description", "CommandType", "Result_Type"]
+        for col, field in enumerate(data_fields, start=1):
+            item = QTableWidgetItem(input_values[field])
+            item.setTextAlignment(Qt.AlignCenter)  # 중앙 정렬 설정
+            self.inspection_list_table.setItem(rowPosition, col, item)
         
         # 삭제 버튼 추가
         btnDelete = QPushButton("삭제")
         btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
-        self.inspection_list_table.setCellWidget(rowPosition, 6, btnDelete)
+        btnDelete.setFixedSize(55, 25)
+        btnDelete.setFont(QFont("NanumBarunGothic", 8))  # NanumBarunGothic 폰트로 설정
+        btnDelete.setStyleSheet("""
+                                QPushButton {
+                                    color: #EA4335;
+                                    background-color: #FFFFFF;
+                                    border: 1px solid #EA4335;
+                                    border-radius: 4px;}
+                                QPushButton:hover {
+                                    color: #CB2215;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #CB2215;}
+                                QPushButton:pressed {
+                                    color: #CB2215;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #CB2215;}
+                                """)
+        # 버튼을 중앙 정렬하기 위해 QWidget을 생성하고 레이아웃 설정
+        widget = QWidget()
+        layout = QHBoxLayout()
+        layout.addWidget(btnDelete)
+        layout.setAlignment(Qt.AlignCenter)
+        layout.setContentsMargins(0, 0, 0, 0)
+        widget.setLayout(layout)
+        self.inspection_list_table.setCellWidget(rowPosition, 6, widget)
         self.inspection_list_table.setItem(rowPosition, 7, QTableWidgetItem(input_values["PluginName"]))
         self.inspection_list_table.setColumnHidden(7, True)
         self.inspection_list_table.setItem(rowPosition, 8, QTableWidgetItem(str(targets_id)))
@@ -1619,12 +1643,12 @@ class InspectionProgressPage(QWidget):
         header.setFont(header_font)
 
         # 각 열 너비 조정
-        self.progress_table.setColumnWidth(0, 110)  # 시스템 장치명 열 너비
+        self.progress_table.setColumnWidth(0, 100)  # 시스템 장치명 열 너비
         self.progress_table.setColumnWidth(1, 200)  # 점검 항목 열 너비
-        self.progress_table.setColumnWidth(2, 435)  # 점검 내용 열 너비
+        self.progress_table.setColumnWidth(2, 430)  # 점검 내용 열 너비
         self.progress_table.setColumnWidth(3, 80)  # 결과 방식 열 너비
         self.progress_table.setColumnWidth(4, 80)  # 점검 결과 열 너비
-        self.progress_table.setColumnWidth(5, 85)  # 상세 결과 열 너비    
+        self.progress_table.setColumnWidth(5, 80)  # 상세 결과 열 너비    
         self.main_layout.addWidget(self.progress_table)
         
         # 버튼 레이아웃 생성
@@ -1753,7 +1777,10 @@ class InspectionProgressPage(QWidget):
                     item = QTableWidgetItem("성공" if data else "실패")
                     item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
                     item.setTextAlignment(Qt.AlignCenter)
-                    item.setForeground(QBrush(QColor(0 , 0, 0)))
+                    if data:  # 성공일 때
+                        item.setForeground(QBrush(QColor("#00B050")))
+                    else:  # 실패일 때
+                        item.setForeground(QBrush(QColor("#EA4335")))
                     self.progress_table.setItem(rowPosition, i, item)
                 else:
                     item = QTableWidgetItem(data if data else "")
