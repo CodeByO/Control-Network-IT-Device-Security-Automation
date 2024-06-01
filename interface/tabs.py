@@ -272,7 +272,7 @@ class MainPage(QWidget):
         
         # '점검 대상 추가' 버튼
         add_target_button = QPushButton("점검 대상 추가")
-        add_target_button.setFixedSize(150, 30)
+        add_target_button.setFixedSize(140, 30)
         # 버튼 폰트 설정
         button_font = QFont("NanumBarunGothic")
         button_font.setBold(True)
@@ -281,19 +281,16 @@ class MainPage(QWidget):
             QPushButton {
                 color: #FFFFFF;
                 background-color: #1A73E8;
-                border: 1px solid #1A73E8;  /* 테두리 색상을 #1A73E8로 설정 */
                 border-radius: 4px;
                 font-size: 16px;
             }
             QPushButton:hover {
-                color: #1A73E8;
-                background-color: #FFFFFF;
-                border: 1px solid #1A73E8;  /* 호버 상태에서도 테두리 색상을 유지 */
+                color: #B9B9B9;
+                background-color: #1256B0;
             }
             QPushButton:pressed {
-                color: #1A73E8;
-                background-color: #FFFFFF;
-                border: 1px solid #1A73E8;  /* 눌린 상태에서도 테두리 색상을 유지 */
+                color: #B9B9B9;
+                background-color: #1256B0;
             }
         """)
         # 테스트용 점검 대상 추가 - 추후 필수 삭제
@@ -311,19 +308,18 @@ class MainPage(QWidget):
         # '>' 버튼
         next_button = QPushButton(">")
         next_button.setFixedSize(30, 30)
-        next_button.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        next_button.setFont(QFont("MalgunGothic", 18, QFont.Bold))  # NanumBarunGothic 폰트로 설정
         next_button.setStyleSheet("""
                                      QPushButton {
-                                         color: gray;
+                                         color: #A6A6A6;
                                          background-color: #FFFFFF;
-                                         border: 1px solid gray;
-                                         border-radius: 4px;}
+                                         border: none;}
                                      QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: gray; }
+                                         color: #787878;
+                                         background-color: #FFFFFF; }
                                     QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: gray; }
+                                         color: #787878;
+                                         background-color: #FFFFFF; }
                                     """)
         next_button.clicked.connect(lambda: self.on_next_button_clicked())
         button_layout.addWidget(next_button)  # '>' 버튼을 레이아웃의 오른쪽에 추가
@@ -377,21 +373,23 @@ class MainPage(QWidget):
         # 삭제 버튼 추가
         btnDelete = QPushButton("삭제")
         btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
-        btnDelete.setFixedSize(75, 25)
-        btnDelete.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        btnDelete.setFixedSize(55, 25)
+        btnDelete.setFont(QFont("NanumBarunGothic", 8))  # NanumBarunGothic 폰트로 설정
         btnDelete.setStyleSheet("""
-                                     QPushButton {
-                                         color: #ea4335;
-                                         background-color: #FFFFFF;
-                                         border: 1px solid #ea4335;
-                                         border-radius: 4px;}
-                                     QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: #ea4335; }
-                                    QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: #ea4335; }
-                                    """)
+                                QPushButton {
+                                    color: #EA4335;
+                                    background-color: #FFFFFF;
+                                    border: 1px solid #EA4335;
+                                    border-radius: 4px;}
+                                QPushButton:hover {
+                                    color: #CB2215;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #CB2215;}
+                                QPushButton:pressed {
+                                    color: #CB2215;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #CB2215;}
+                                """)
         # 버튼을 중앙 정렬하기 위해 QWidget을 생성하고 레이아웃 설정
         widget = QWidget()
         layout = QHBoxLayout()
@@ -756,18 +754,20 @@ class MainPage(QWidget):
             detail_result_btn.setFixedSize(57, 27)
             detail_result_btn.clicked.connect(lambda _, row=row_position: self.DetailResult(row, item_data['targets']))
             detail_result_btn.setStyleSheet("""
-                                     QPushButton {
-                                         color: #1A73E8;
-                                         background-color: #FFFFFF;
-                                         border: 1px solid #1A73E8;
-                                         border-radius: 4px;}
-                                     QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    """)
+                                QPushButton {
+                                    color: #1A73E8;
+                                    background-color: #FFFFFF;
+                                    border: 1px solid #1A73E8;
+                                    border-radius: 4px;}
+                                QPushButton:hover {
+                                    color: #1256B0;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #1256B0;}
+                                QPushButton:pressed {
+                                    color: #1256B0;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #1256B0;}
+                                """)
             widget = QWidget()
             btn_layout = QHBoxLayout(widget)
             btn_layout.addWidget(detail_result_btn)
@@ -869,18 +869,20 @@ class MainPage(QWidget):
             detail_btn.setFont(btn_font)
             detail_btn.setFixedSize(57, 27)
             detail_btn.setStyleSheet("""
-                                     QPushButton {
-                                         color: #1A73E8;
-                                         background-color: #FFFFFF;
-                                         border: 1px solid #1A73E8;
-                                         border-radius: 4px;}
-                                     QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    """)
+                                QPushButton {
+                                    color: #1A73E8;
+                                    background-color: #FFFFFF;
+                                    border: 1px solid #1A73E8;
+                                    border-radius: 4px;}
+                                QPushButton:hover {
+                                    color: #1256B0;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #1256B0;}
+                                QPushButton:pressed {
+                                    color: #1256B0;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #1256B0;}
+                                """)
             detail_btn.clicked.connect(lambda _, row=row_position: self.ItemDetails(row, target_info))
 
             widget = QWidget()
@@ -929,41 +931,40 @@ class MainPage(QWidget):
             result_icon.setPixmap(QPixmap("interface/x.png").scaled(30, 30, Qt.KeepAspectRatio))
             result_content = QLabel(result)
             result_content.setFont(result_font)
-            result_content.setStyleSheet("color: #FF0000;")
+            result_content.setStyleSheet("color: #EA4335;")
 
         result_content.setFixedHeight(50)
         result_layout = QHBoxLayout()
+        result_layout.setContentsMargins(0, 20, 0, 0)
         result_layout.addStretch()
         result_layout.addWidget(result_icon)
         result_layout.addWidget(result_content)
         result_layout.addStretch()
         layout.addLayout(result_layout)
-    
-        fixed_width = 700
 
         # 점검 결과, 점검 항목, 점검 내용, 결과 방식
         labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
         contents = [info, description, result_type]
 
         for label_text, content_text in zip(labels_texts, contents):
-            item_layout = QHBoxLayout()
-    
+            item_layout = QVBoxLayout()
+            item_layout.setContentsMargins(0, 10, 0, 10)
             label = QLabel(label_text)
             label.setFont(bold_font)
             content = QLineEdit()
             content.setFont(font)
             content.setText(content_text)
             content.setReadOnly(True)
-            content.setFixedWidth(fixed_width)
     
             item_layout.addWidget(label)
             item_layout.addWidget(content)
     
             layout.addLayout(item_layout)
 
-        # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
+        # CommandName, CommandType, CommandString, 출력 메시지, 에러 메시지 등의 정보 표시
         for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], [target_info[i] for i in [2, 3, 4, 6, 7]]):
-            item_layout = QHBoxLayout()     
+            item_layout = QVBoxLayout()
+            item_layout.setContentsMargins(0, 10, 0, 10)
             label = QLabel(label_text)
             label.setFont(bold_font)
             if label_text == "CommandString":
@@ -971,12 +972,10 @@ class MainPage(QWidget):
                 content.setFont(font)
                 content.setReadOnly(True)
                 content.setFixedHeight(100)
-                content.setFixedWidth(fixed_width)
             else:
                 content = QLineEdit()
                 content.setReadOnly(True)
                 content.setFont(font)
-                content.setFixedWidth(fixed_width)
             content.setText(content_text)
             content.setStyleSheet("background-color: white;")
     
@@ -1054,26 +1053,25 @@ class InspectionListPage(QWidget):
         # 뒤로 가기 버튼 추가 및 버튼 레이아웃에 설정
         btnBack = QPushButton("<")
         btnBack.setFixedSize(30, 30)
-        btnBack.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        btnBack.setFont(QFont("MalgunGothic", 18, QFont.Bold))
         btnBack.setStyleSheet("""
                                      QPushButton {
-                                         color: gray;
+                                         color: #A6A6A6;
                                          background-color: #FFFFFF;
-                                         border: 1px solid gray;
-                                         border-radius: 4px;}
+                                         border: none;}
                                      QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: gray; }
+                                         color: #787878;
+                                         background-color: #FFFFFF; }
                                     QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: gray; }
+                                         color: #787878;
+                                         background-color: #FFFFFF; }
                                     """)
         btnBack.clicked.connect(self.goBack)
         buttonLayout.addWidget(btnBack)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
         
         # "점검 실행" 버튼 생성 및 버튼 레이아웃에 설정
         executeButton = QPushButton("점검 실행")
-        executeButton.setFixedSize(100, 30)  # 버튼 크기 설정
+        executeButton.setFixedSize(110, 30)  # 버튼 크기 설정
         # 버튼 폰트 설정
         button_font = QFont("NanumBarunGothic")
         button_font.setBold(True)
@@ -1082,55 +1080,50 @@ class InspectionListPage(QWidget):
             QPushButton {
                 color: #FFFFFF;
                 background-color: #1A73E8;
-                border: 1px solid #1A73E8;  /* 테두리 색상을 #1A73E8로 설정 */
                 border-radius: 4px;
                 font-size: 16px;
             }
             QPushButton:hover {
-                color: #1A73E8;
-                background-color: #FFFFFF;
-                border: 1px solid #1A73E8;  /* 호버 상태에서도 테두리 색상을 유지 */
+                color: #B9B9B9;
+                background-color: #1A73E8;
             }
             QPushButton:pressed {
-                color: #1A73E8;
-                background-color: #FFFFFF;
-                border: 1px solid #1A73E8;  /* 눌린 상태에서도 테두리 색상을 유지 */
+                color: #B9B9B9;
+                background-color: #1A73E8;
             }
         """)
         executeButton.clicked.connect(self.executeInspection)  # 클릭 시 executeInspection 메서드 호출
 
         # "규제 지침 등록" 버튼 생성 및 버튼 레이아웃에 설정
-        add_btn = QPushButton("규제 지침 등록") # '+' 버튼 생성 및 버튼 레이아웃에 설정
-        add_btn.setFixedSize(100, 30)
+        add_btn = QPushButton("규제 지침 등록")
+        add_btn.setFixedSize(110, 30)
         add_btn.setFont(QFont("NanumBarunGothic", 10, QFont.Bold))  
         add_btn.setStyleSheet("""
-                                     QPushButton {
-                                         color: #1A73E8;
-                                         background-color: #FFFFFF;
-                                         border: 1px solid #1A73E8;
-                                         border-radius: 4px;}
-                                     QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    """)
+                                QPushButton {
+                                    color: #1A73E8;
+                                    background-color: #FFFFFF;
+                                    border: 1px solid #1A73E8;
+                                    border-radius: 4px;}
+                                QPushButton:hover {
+                                    color: #1256B0;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #1256B0;}
+                                QPushButton:pressed {
+                                    color: #1256B0;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #1256B0;}
+                                """)
         add_btn.clicked.connect(self.AddInspectionList) # 규제 지침 등록 창 열기
-        buttonLayout.addWidget(add_btn)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
-        # 버튼을 가운데로 정렬하기 위해 빈 공간 추가
+        buttonLayout.addWidget(add_btn) # 버튼 레이아웃에 뒤로 가기 버튼 추가
         buttonLayout.addStretch()
+        # 버튼을 가운데로 정렬하기 위해 빈 공간 추가
         buttonLayout.addWidget(executeButton)
         buttonLayout.addStretch()
-
-        dummy1 = QLabel("")
-        dummy1.setFixedSize(30, 30)
-        dummy1.setStyleSheet("background-color: white")
-        buttonLayout.addWidget(dummy1, alignment=Qt.AlignmentFlag.AlignRight)
-        dummy2 = QLabel("")
-        dummy2.setFixedSize(120, 30)
-        dummy2.setStyleSheet("background-color: white")
-        buttonLayout.addWidget(dummy2, alignment=Qt.AlignmentFlag.AlignRight)
+        
+        dummy = QLabel("")
+        dummy.setFixedSize(140, 30)
+        dummy.setStyleSheet("background-color: white")
+        buttonLayout.addWidget(dummy, alignment=Qt.AlignmentFlag.AlignRight)
 
         # 버튼 레이아웃을 메인 레이아웃에 추가하여 정렬
         layout.addLayout(buttonLayout)
@@ -1206,20 +1199,26 @@ class InspectionListPage(QWidget):
         btn_layout.addStretch()
         save_btn = QPushButton('저장')  # '저장' 버튼 추가
         save_btn.setFont(bold_font) 
-        save_btn.setFixedSize(40, 30)
+        save_btn.setFixedSize(50, 30)
         save_btn.setStyleSheet("""
-                                     QPushButton {
-                                         color: #1A73E8;
-                                         background-color: #FFFFFF;
-                                         border: 1px solid #1A73E8;
-                                         border-radius: 4px;}
-                                     QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    """)
+            QPushButton {
+                color: #747474;
+                background-color: #FFFFFF;
+                border-radius: 4px;
+                border: 1px solid #747474;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                color: #545454;
+                background-color: #B9B9B9;
+                border: 1px solid #545454;
+            }
+            QPushButton:pressed {
+                color: #545454;
+                background-color: #B9B9B9;
+                border: 1px solid #545454;
+            }
+            """)
         save_btn.clicked.connect(self.addNewPlugin)  # 클릭 이벤트에 함수 연결
         btn_layout.addWidget(save_btn)
         btn_layout.addStretch()
@@ -1449,20 +1448,22 @@ class InspectionListPage(QWidget):
         btnDelete = QPushButton("삭제")
         btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
         btnDelete.setFixedSize(55, 25)
-        btnDelete.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        btnDelete.setFont(QFont("NanumBarunGothic", 8))  # NanumBarunGothic 폰트로 설정
         btnDelete.setStyleSheet("""
-                                     QPushButton {
-                                         color: #ea4335;
-                                         background-color: #FFFFFF;
-                                         border: 1px solid #ea4335;
-                                         border-radius: 4px;}
-                                     QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: #ea4335; }
-                                    QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: #ea4335; }
-                                    """)
+                                QPushButton {
+                                    color: #EA4335;
+                                    background-color: #FFFFFF;
+                                    border: 1px solid #EA4335;
+                                    border-radius: 4px;}
+                                QPushButton:hover {
+                                    color: #CB2215;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #CB2215;}
+                                QPushButton:pressed {
+                                    color: #CB2215;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #CB2215;}
+                                """)
         # 버튼을 중앙 정렬하기 위해 QWidget을 생성하고 레이아웃 설정
         widget = QWidget()
         layout = QHBoxLayout()
@@ -1633,19 +1634,18 @@ class InspectionProgressPage(QWidget):
         btnBack = QPushButton("<")
         btnBack.setFixedSize(30, 30)
         btnBack.clicked.connect(self.goBack)
-        btnBack.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+        btnBack.setFont(QFont("MalgunGothic", 18, QFont.Bold))  # NanumBarunGothic 폰트로 설정
         btnBack.setStyleSheet("""
                                      QPushButton {
-                                         color: gray;
+                                         color: #A6A6A6;
                                          background-color: #FFFFFF;
-                                         border: 1px solid gray;
-                                         border-radius: 4px;}
+                                         border: none;}
                                      QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: gray; }
+                                         color: #787878;
+                                         background-color: #FFFFFF; }
                                     QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: gray; }
+                                         color: #787878;
+                                         background-color: #FFFFFF; }
                                     """)
         btnBack.clicked
         buttonLayout.addWidget(btnBack)  # 버튼 레이아웃에 뒤로 가기 버튼 추가
@@ -1655,18 +1655,21 @@ class InspectionProgressPage(QWidget):
         homeButton.setFixedSize(60, 30)  # 버튼 크기 설정
         homeButton.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         homeButton.setStyleSheet("""
-                                     QPushButton {
-                                         color: #1A73E8;
-                                         background-color: #FFFFFF;
-                                         border: 1px solid #1A73E8;
-                                         border-radius: 4px;}
-                                     QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    """)
+                                QPushButton {
+                                    color: #1A73E8;
+                                    background-color: #FFFFFF;
+                                    border: 1px solid #1A73E8;
+                                    border-radius: 4px;
+                                    font-size: 13px;}
+                                QPushButton:hover {
+                                    color: #1256B0;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #1256B0;}
+                                QPushButton:pressed {
+                                    color: #1256B0;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #1256B0;}
+                                """)
         homeButton.clicked.connect(self.returnToHome)  # 클릭 시 returnToHome 메서드 호출
         buttonLayout.addWidget(homeButton)
         
@@ -1675,18 +1678,24 @@ class InspectionProgressPage(QWidget):
         cancelButton.setFixedSize(50, 30)  # 버튼 크기 설정
         cancelButton.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
         cancelButton.setStyleSheet("""
-                                     QPushButton {
-                                         color: #1A73E8;
-                                         background-color: #FFFFFF;
-                                         border: 1px solid #1A73E8;
-                                         border-radius: 4px;}
-                                     QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    """)
+            QPushButton {
+                color: #747474;
+                background-color: #FFFFFF;
+                border-radius: 4px;
+                border: 1px solid #747474;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                color: #545454;
+                background-color: #B9B9B9;
+                border: 1px solid #545454;
+            }
+            QPushButton:pressed {
+                color: #545454;
+                background-color: #B9B9B9;
+                border: 1px solid #545454;
+            }
+            """)
         cancelButton.clicked.connect(self.cancelInspection)  # 클릭 시 cancelInspection메서드 호출
        
         # 버튼을 가운데로 정렬하기 위해 빈 공간 추가
@@ -1755,19 +1764,21 @@ class InspectionProgressPage(QWidget):
             detail_result_btn = QPushButton("세부 내용")
             detail_result_btn.setFixedSize(65, 25)
             detail_result_btn.setStyleSheet("""
-                                     QPushButton {
-                                         color: #1A73E8;
-                                         background-color: #FFFFFF;
-                                         border: 1px solid #1A73E8;
-                                         border-radius: 4px;}
-                                     QPushButton:hover {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    QPushButton:pressed {
-                                         color: #FFFFFF;
-                                         background-color: #1A73E8; }
-                                    """)
-            detail_result_btn.setFont(QFont("NanumBarunGothic"))  # NanumBarunGothic 폰트로 설정
+                                QPushButton {
+                                    color: #1A73E8;
+                                    background-color: #FFFFFF;
+                                    border: 1px solid #1A73E8;
+                                    border-radius: 4px;}
+                                QPushButton:hover {
+                                    color: #1256B0;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #1256B0;}
+                                QPushButton:pressed {
+                                    color: #1256B0;
+                                    background-color: #B9B9B9;
+                                    border: 1px solid #1256B0;}
+                                """)
+            detail_result_btn.setFont(QFont("NanumBarunGothic", 8))  # NanumBarunGothic 폰트로 설정
             detail_result_btn.clicked.connect(lambda: self.ItemDetails(detail_result_btn))
             # 버튼을 중앙 정렬하기 위해 QWidget을 생성하고 레이아웃 설정
             widget = QWidget()
@@ -1854,28 +1865,26 @@ class InspectionProgressPage(QWidget):
 
         result_content.setFixedHeight(50) 
         result_layout = QHBoxLayout()
+        result_layout.setContentsMargins(0, 20, 0, 0)
         result_layout.addStretch()
         result_layout.addWidget(result_icon)
         result_layout.addWidget(result_content)
         result_layout.addStretch()
         layout.addLayout(result_layout)
-
-        fixed_width = 700
         
         # 점검 결과, 점검 항목, 점검 내용, 결과 방식
         labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
         contents = [info, description, result_type]
 
         for label_text, content_text in zip(labels_texts, contents):
-            item_layout = QHBoxLayout()
-    
+            item_layout = QVBoxLayout()
+            item_layout.setContentsMargins(0, 10, 0, 10)
             label = QLabel(label_text)
             label.setFont(bold_font)
             content = QLineEdit()
             content.setFont(font)
             content.setText(content_text)
             content.setReadOnly(True)
-            content.setFixedWidth(fixed_width)
     
             item_layout.addWidget(label)
             item_layout.addWidget(content)
@@ -1885,7 +1894,8 @@ class InspectionProgressPage(QWidget):
         inspection_targets = inspection_targets + [inspection_results[4], inspection_results[5]]
         # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
         for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], inspection_targets):
-            item_layout = QHBoxLayout()     
+            item_layout = QVBoxLayout()
+            item_layout.setContentsMargins(0, 10, 0, 10)
             label = QLabel(label_text)
             label.setFont(bold_font)
             if label_text == "CommandString":
@@ -1893,12 +1903,10 @@ class InspectionProgressPage(QWidget):
                 content.setFont(font)
                 content.setReadOnly(True)
                 content.setFixedHeight(100)
-                content.setFixedWidth(fixed_width)
             else:
                 content = QLineEdit()
                 content.setReadOnly(True)
                 content.setFont(font)
-                content.setFixedWidth(fixed_width)
             content.setText(content_text)
             content.setStyleSheet("background-color: white;")
     
@@ -1906,7 +1914,6 @@ class InspectionProgressPage(QWidget):
             item_layout.addWidget(content)
     
             layout.addLayout(item_layout)
-
 
         detail_dialog.setLayout(layout)
         detail_dialog.exec_()
