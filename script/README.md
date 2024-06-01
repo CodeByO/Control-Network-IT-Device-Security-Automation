@@ -23,7 +23,7 @@
 
 [tag]
 
-    Result_Type - action, info, registry
+    Result_Type - action, info
     CommandType - Powershell, cmd, Bash
     PluginVersion - 1
     PluginName - 플러그인 이름
