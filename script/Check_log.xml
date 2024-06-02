@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Check_Log">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Check_Log.xml</PluginName>
+    <TargetOS>Linux</TargetOS>
+    <Result_Type>info</Result_Type>
+    <Info>접속 기록과 로그 기록 확인</Info>
+    <Description>마지막 로그인 기록과 "COMMAND"또는 "sudo"와 관련된 로그 출력</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Check_Log</CommandName>
+            <CommandType>Bash</CommandType>
+            <CommandString>sudo sh -c 'last -n 10 && grep -E "COMMAND|" /var/log/auth.log | tail -n 5'</CommandString>
+        </Command>
+    </Commands>
+</Plugin>
