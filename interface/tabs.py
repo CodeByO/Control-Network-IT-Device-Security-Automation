@@ -818,6 +818,7 @@ class MainPage(QWidget):
         self.detail_table = QTableWidget()
         self.detail_table.setColumnCount(5)
         self.detail_table.setHorizontalHeaderLabels(["점검 항목", "점검 내용", "결과 방식", "점검 결과", "세부 내용"])
+        self.detail_table.setFont(QFont("NanumBarunGothic"))
         self.detail_table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         self.detail_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         # 테이블 초기화
@@ -1019,13 +1020,15 @@ class InspectionListPage(QWidget):
 
         self.inspection_target_table.setColumnCount(5)
         self.inspection_target_table.setHorizontalHeaderLabels(['선택', '시스템 장치명', 'OS', '접속 방식', 'IP 주소'])
+        self.inspection_target_table.setFont(QFont("NanumBarunGothic"))
         self.inspection_target_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.inspection_target_table.horizontalHeader().setStretchLastSection(True)
         self.inspection_target_table.setItemDelegate(CenterAlignDelegate(self)) # 중앙 정렬 델리게이트 설정
         
         
         self.inspection_list_table.setColumnCount(9)
-        self.inspection_list_table.setHorizontalHeaderLabels(['선택', '운영체제', '이름', '설명', '실행 방식', '결과 방식', '삭제'])
+        self.inspection_list_table.setHorizontalHeaderLabels(['선택', '운영체제', '점검 항목', '점검 내용', '실행 방식', '결과 방식', '삭제'])
+        self.inspection_list_table.setFont(QFont("NanumBarunGothic"))
         self.inspection_list_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.inspection_list_table.horizontalHeader().setStretchLastSection(True)
 
