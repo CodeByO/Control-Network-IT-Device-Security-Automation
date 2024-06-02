@@ -860,15 +860,19 @@ class MainPage(QWidget):
             self.detail_table.setItem(row_position, 2, item_2)
 
             item_3 = QTableWidgetItem(target_info[5])  # 결과
-            item_3.setFont(table_font)
+            item_3.setFont(header_font)
             item_3.setTextAlignment(Qt.AlignCenter)
+            if item_3 == "성공":
+                item_3.setForeground(QBrush(QColor("#00B050")))
+            elif item_3 == "실패":
+                item_3.setForeground(QBrush(QColor("#EA4335")))
             self.detail_table.setItem(row_position, 3, item_3)
 
             # 세부 내용 버튼 추가
             detail_btn = QPushButton('세부 내용')
             btn_font = QFont("NanumBarunGothic", 8)
             detail_btn.setFont(btn_font)
-            detail_btn.setFixedSize(57, 27)
+            detail_btn.setFixedSize(60, 27)
             detail_btn.setStyleSheet("""
                                 QPushButton {
                                     color: #1A73E8;
@@ -913,11 +917,11 @@ class MainPage(QWidget):
 
         detail_dialog = QDialog(self)  # 세부 내용 창
         detail_dialog.setWindowTitle("세부 내용")
-        detail_dialog.resize(800, 600)
+        detail_dialog.resize(730, 680)
 
         font = QFont("NanumBarunGothic", 9)
         bold_font = QFont("NanumBarunGothic", 9, QFont.Bold)
-        result_font = QFont("NanumBarunGothic", 20, QFont.Bold)
+        result_font = QFont("NanumBarunGothic", 18, QFont.Bold)
         layout = QVBoxLayout()
 
         # 점검 결과에 따른 이미지와 글씨색 설정
@@ -936,35 +940,45 @@ class MainPage(QWidget):
 
         result_content.setFixedHeight(50)
         result_layout = QHBoxLayout()
-        result_layout.setContentsMargins(0, 20, 0, 0)
+        result_layout.setContentsMargins(0, 20, 0, 10)
         result_layout.addStretch()
         result_layout.addWidget(result_icon)
         result_layout.addWidget(result_content)
         result_layout.addStretch()
         layout.addLayout(result_layout)
 
+        line1 = QFrame()
+        line1.setFrameShape(QFrame.HLine)
+        line1.setFrameShadow(QFrame.Sunken)
+        line1.setStyleSheet("color: #A6A6A6;")
+        layout.addWidget(line1)
+        
         # 점검 결과, 점검 항목, 점검 내용, 결과 방식
         labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
         contents = [info, description, result_type]
 
         for label_text, content_text in zip(labels_texts, contents):
-            item_layout = QVBoxLayout()
-            item_layout.setContentsMargins(0, 10, 0, 10)
+            item_layout = QHBoxLayout()
             label = QLabel(label_text)
             label.setFont(bold_font)
-            content = QLineEdit()
+            content = QLabel(content_text)
             content.setFont(font)
             content.setText(content_text)
-            content.setReadOnly(True)
-    
+            content.setFixedWidth(580)
             item_layout.addWidget(label)
             item_layout.addWidget(content)
     
             layout.addLayout(item_layout)
 
-        # CommandName, CommandType, CommandString, 출력 메시지, 에러 메시지 등의 정보 표시
-        for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], [target_info[i] for i in [2, 3, 4, 6, 7]]):
-            item_layout = QVBoxLayout()
+        line2 = QFrame()
+        line2.setFrameShape(QFrame.HLine)
+        line2.setFrameShadow(QFrame.Sunken)
+        line2.setStyleSheet("color: #A6A6A6;")
+        layout.addWidget(line2)
+
+        # CommandName, CommandType, CommandString의 정보 표시
+        for label_text, content_text in zip(["CommandName", "CommandType", "CommandString"], [target_info[i] for i in [2, 3, 4]]):
+            item_layout = QHBoxLayout()
             item_layout.setContentsMargins(0, 10, 0, 10)
             label = QLabel(label_text)
             label.setFont(bold_font)
@@ -972,13 +986,35 @@ class MainPage(QWidget):
                 content = QTextEdit()
                 content.setFont(font)
                 content.setReadOnly(True)
-                content.setFixedHeight(100)
+                content.setFixedHeight(70)
+                content.setFixedWidth(585)
+                content.setStyleSheet("QTextEdit {border: 1px solid #FFFFFF;}")
             else:
-                content = QLineEdit()
-                content.setReadOnly(True)
+                content = QLabel(content_text)
                 content.setFont(font)
+                content.setFixedWidth(580)
             content.setText(content_text)
-            content.setStyleSheet("background-color: white;")
+    
+            item_layout.addWidget(label)
+            item_layout.addWidget(content)
+    
+            layout.addLayout(item_layout)
+
+        line3 = QFrame()
+        line3.setFrameShape(QFrame.HLine)
+        line3.setFrameShadow(QFrame.Sunken)
+        line3.setStyleSheet("color: #A6A6A6;")
+        layout.addWidget(line3)
+        
+        # 출력 메시지, 에러 메시지 정보 표시
+        for label_text, content_text in zip(["출력 메시지", "에러 메시지"], [target_info[i] for i in [6, 7]]):
+            item_layout = QHBoxLayout()
+            label = QLabel(label_text)
+            label.setFont(bold_font)
+            content = QLabel(content_text)
+            content.setFont(font)
+            content.setFixedWidth(580)
+            content.setText(content_text)
     
             item_layout.addWidget(label)
             item_layout.addWidget(content)
@@ -1778,7 +1814,7 @@ class InspectionProgressPage(QWidget):
                 
                 if str(data).isdigit():
                     item = QTableWidgetItem("성공" if data else "실패")
-                    item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
+                    item.setFont(QFont("NanumBarunGothic", 8, QFont.Bold))  # 여기서 폰트와 크기 조절 가능
                     item.setTextAlignment(Qt.AlignCenter)
                     if data:  # 성공일 때
                         item.setForeground(QBrush(QColor("#00B050")))
@@ -1831,11 +1867,11 @@ class InspectionProgressPage(QWidget):
         
         detail_dialog = QDialog(self)  # 세부 내용 창
         detail_dialog.setWindowTitle("세부 내용")
-        detail_dialog.resize(800, 600)
+        detail_dialog.resize(730, 680)
         
         font = QFont("NanumBarunGothic", 9)
         bold_font = QFont("NanumBarunGothic", 9, QFont.Bold)
-        result_font = QFont("NanumBarunGothic", 20, QFont.Bold)
+        result_font = QFont("NanumBarunGothic", 18, QFont.Bold)
         layout = QVBoxLayout()
         
         global path_database
@@ -1893,38 +1929,48 @@ class InspectionProgressPage(QWidget):
             result_content.setFont(result_font)
             result_content.setStyleSheet("color: #FF0000;")
 
-        result_content.setFixedHeight(50) 
+        result_content.setFixedHeight(50)
         result_layout = QHBoxLayout()
-        result_layout.setContentsMargins(0, 20, 0, 0)
+        result_layout.setContentsMargins(0, 20, 0, 10)
         result_layout.addStretch()
         result_layout.addWidget(result_icon)
         result_layout.addWidget(result_content)
         result_layout.addStretch()
         layout.addLayout(result_layout)
-        
+
+        line1 = QFrame()
+        line1.setFrameShape(QFrame.HLine)
+        line1.setFrameShadow(QFrame.Sunken)
+        line1.setStyleSheet("color: #A6A6A6;")
+        layout.addWidget(line1)
+                
         # 점검 결과, 점검 항목, 점검 내용, 결과 방식
         labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
         contents = [info, description, result_type]
 
         for label_text, content_text in zip(labels_texts, contents):
-            item_layout = QVBoxLayout()
-            item_layout.setContentsMargins(0, 10, 0, 10)
+            item_layout = QHBoxLayout()
             label = QLabel(label_text)
             label.setFont(bold_font)
-            content = QLineEdit()
+            content = QLabel(content_text)
             content.setFont(font)
             content.setText(content_text)
-            content.setReadOnly(True)
-    
+            content.setFixedWidth(580)
             item_layout.addWidget(label)
             item_layout.addWidget(content)
     
             layout.addLayout(item_layout)
 
+        line2 = QFrame()
+        line2.setFrameShape(QFrame.HLine)
+        line2.setFrameShadow(QFrame.Sunken)
+        line2.setStyleSheet("color: #A6A6A6;")
+        layout.addWidget(line2)
+
         inspection_targets = inspection_targets + [inspection_results[4], inspection_results[5]]
         # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
-        for label_text, content_text in zip(["CommandName", "CommandType", "CommandString", "출력 메시지", "에러 메시지"], inspection_targets):
-            item_layout = QVBoxLayout()
+        for label_text, content_text in zip(["CommandName", "CommandType", "CommandString"], inspection_targets[:3]):
+            item_layout = QHBoxLayout()
             item_layout.setContentsMargins(0, 10, 0, 10)
             label = QLabel(label_text)
             label.setFont(bold_font)
@@ -1932,13 +1978,35 @@ class InspectionProgressPage(QWidget):
                 content = QTextEdit()
                 content.setFont(font)
                 content.setReadOnly(True)
-                content.setFixedHeight(100)
+                content.setFixedHeight(70)
+                content.setFixedWidth(585)
+                content.setStyleSheet("QTextEdit {border: 1px solid #FFFFFF;}")
             else:
-                content = QLineEdit()
-                content.setReadOnly(True)
+                content = QLabel(content_text)
                 content.setFont(font)
+                content.setFixedWidth(580)
             content.setText(content_text)
-            content.setStyleSheet("background-color: white;")
+    
+            item_layout.addWidget(label)
+            item_layout.addWidget(content)
+    
+            layout.addLayout(item_layout)
+
+        line3 = QFrame()
+        line3.setFrameShape(QFrame.HLine)
+        line3.setFrameShadow(QFrame.Sunken)
+        line3.setStyleSheet("color: #A6A6A6;")
+        layout.addWidget(line3)
+        
+        # 출력 메시지, 에러 메시지
+        for label_text, content_text in zip(["출력 메시지", "에러 메시지"], inspection_targets[3:5]):
+            item_layout = QHBoxLayout()
+            label = QLabel(label_text)
+            label.setFont(bold_font)
+            content = QLabel(content_text)
+            content.setFont(font)
+            content.setFixedWidth(580)
+            content.setText(content_text)
     
             item_layout.addWidget(label)
             item_layout.addWidget(content)
