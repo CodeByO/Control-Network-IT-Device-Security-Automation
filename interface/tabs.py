@@ -293,6 +293,7 @@ class MainPage(QWidget):
                 background-color: #1256B0;
             }
         """)
+
         # 테스트용 점검 대상 추가 - 추후 필수 삭제
         add_target_button.clicked.connect(lambda:self.testTarget())
         
@@ -360,6 +361,7 @@ class MainPage(QWidget):
         self.main_layout.addLayout(input_layout)
 
         return vulnerability_check_tab
+    
     # 테스트용 함수 -> 추후 필수 삭제
     def testTarget(self):
         ipAddr = "172.26.245.114"
