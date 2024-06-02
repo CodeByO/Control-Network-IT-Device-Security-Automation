@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Dos_Attack_weekness_service_disable">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Dos_Attack_weekness_service_disable.xml</PluginName>
+    <TargetOS>Linux</TargetOS>
+    <Result_Type>info</Result_Type>
+    <Info>Dos 공격에 취약한 서비스 비활성화</Info>
+    <Description>Dos 공격에 취약한 echo, discard, daytime, chargen 서비스 활성화 된 경우 비활성화</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Dos_Attack_weekness_service_disable</CommandName>
+            <CommandType>Bash</CommandType>
+            <CommandString>netstat -na | grep '*.13' && for service in echo discard daytime chargen; do grep -q 'disable\s*=\s*yes' /etc/xinetd.d/$service && echo "$service is disabled" || echo "$service is not disabled"; done</CommandString>
+        </Command>
+    </Commands>
+</Plugin>
