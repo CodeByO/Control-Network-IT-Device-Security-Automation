@@ -89,7 +89,10 @@ def ParseXml(target_os:str, plugin_dict : dict)->list:
         if script_path.suffix.lower() == ".xml":
             xmlstring = Path(script_path).read_text(encoding='utf-8')
             soup = bf(xmlstring, features="xml")
-            target = soup.find('TargetOS').text
+            try:
+                target = soup.find('TargetOS').text
+            except AttributeError:
+                continue
             name = soup.find('Plugin').get('name')
             if target == target_os and name in plugin_dict.keys():
                 result_type = soup.find('Result_Type').text
