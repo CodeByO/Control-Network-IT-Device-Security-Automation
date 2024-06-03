@@ -91,30 +91,31 @@ def ParseXml(target_os:str, plugin_dict : dict)->list:
             soup = bf(xmlstring, features="xml")
             try:
                 target = soup.find('TargetOS').text
+                name = soup.find('Plugin').get('name')
+                if target == target_os and name in plugin_dict.keys():
+                    result_type = soup.find('Result_Type').text
+                    commands_dict = {}
+                    plugin_value = plugin_dict.get(name)
+                    info = soup.find('Plugin').find("Info").text
+                    description = soup.find('Plugin').find("Description").text
+                    commands = soup.find('Plugin').find("Commands")
+                    command_count = commands.find('CommandCount').text
+                    for command in commands.find_all('Command'):
+                        command_type = command.find('CommandType').text
+                        command_string = command.find('CommandString').text
+                        commands_dict[plugin_value[1]] = {
+                            'PluginName': name,
+                            'Info' : info,
+                            'Description' : description,
+                            'ResultType': result_type,
+                            'CommandCount': command_count,
+                            'CommandType': command_type,
+                            'CommandString': command_string
+                        }
+                    inspection_lists.append(commands_dict)
             except AttributeError:
                 continue
-            name = soup.find('Plugin').get('name')
-            if target == target_os and name in plugin_dict.keys():
-                result_type = soup.find('Result_Type').text
-                commands_dict = {}
-                plugin_value = plugin_dict.get(name)
-                info = soup.find('Plugin').find("Info").text
-                description = soup.find('Plugin').find("Description").text
-                commands = soup.find('Plugin').find("Commands")
-                command_count = commands.find('CommandCount').text
-                for command in commands.find_all('Command'):
-                    command_type = command.find('CommandType').text
-                    command_string = command.find('CommandString').text
-                    commands_dict[plugin_value[1]] = {
-                        'PluginName': name,
-                        'Info' : info,
-                        'Description' : description,
-                        'ResultType': result_type,
-                        'CommandCount': command_count,
-                        'CommandType': command_type,
-                        'CommandString': command_string
-                    }
-                inspection_lists.append(commands_dict)
+            
     
     return inspection_lists
 
