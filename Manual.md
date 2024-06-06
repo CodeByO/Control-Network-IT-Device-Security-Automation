@@ -4,44 +4,55 @@
 <p align="center">
 <img width="70%" alt="점검 대상 추가" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/07a2d1ea-04a2-4507-9460-b3556f70950d">
 </p>
+
     - 점검 대상 정보(점검 대상 OS, 접속 방식, 포트 번호, 시스템 명칭, 시스템 IP 주소, ID, 패스워드)를 입력한 뒤, 	**점검 대상 추가** 버튼을 클릭하여 점검할 시스템을 추가합니다.
     - 우측 하단에 위치한 ">" 버튼을 클릭하여 다음 화면으로 넘어갑니다.
  
 2. **점검 항목 선택, 추가 및 실행**
 <p align="center">
-  <img src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/bb876645-a0b1-44c7-bb27-44b6522cc3df" alt="점검 항목 선택" width="45%" style="margin-right: 10px;">
-  <img src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/66ec5b9f-6749-45d6-84c1-e2ff67bdd1cd" alt="점검 대상 추가" width="45%">
+<img width="70%" alt="점검 대상 추가" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/bb876645-a0b1-44c7-bb27-44b6522cc3df">
 </p>
+
     - 점검할 시스템 및 점검할 항목들을 선택한 뒤, 중앙 하단에 위치한 **점검 실행** 버튼을 누르면 선택한 시스템에 선택한 점검 항목들에 대한 점검이 진행됩니다.
     - 만약 기존의 점검 항목에 원하는 점검 항목이 없을 경우 좌측 하단에 위치한 **규제 지침 등록** 버튼을 누릅니다.
-    - 추가로 등록하고 싶은 규제 지침에 대한 정보들을 선택 및 입력한 후, 중앙 하단에 위치한 **저장** 버튼을 눌러 기존 항목에 새롭게 작성한 점검 항목을 추가할 수 있습니다.
 
-3. **점검 진행**
+3. **점검 항목 추가**
+<p align="center">
+<img width="70%" alt="점검 대상 추가" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/66ec5b9f-6749-45d6-84c1-e2ff67bdd1cd">
+</p>
+
+- 추가로 등록하고 싶은 규제 지침에 대한 정보들을 선택 및 입력한 후, 중앙 하단에 위치한 **저장** 버튼을 눌러 기존 항목에 새롭게 작성한 점검 항목을 추가할 수 있습니다.
+
+4. **점검 진행**
 <p align="center">
 <img width="70%" alt="점검 대상 추가" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/ae6ffa04-f68f-47ad-88ba-6caff1f7dd30">
 </p>
+
     - 점검 실행 시, 프로그레스 바로 점검이 진행되고 있음을 보여줍니다.
     - 좌측 하단에 위치한 "<" 버튼을 클릭하면 이전 화면으로 이동합니다.
     - 우측 화면에 위치한 **취소** 버튼을 클릭하면 진행 중인 점검을 취소할 수 있습니다.
 
-4. **점검 이력 조회**
+5. **점검 이력 조회**
 <p align="center">
 <img width="70%" alt="점검 대상 추가" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/e96bf397-e121-4277-b190-5d3e2f1d1337">
 </p>
+
     - 점검 이력 조회 탭을 선택하면, 이전에 실행했던 점검들의 이력을 날짜, OS, IP 주소를 기준으로 조회할 수 있습니다.
     - 우측 상단에는 OS 별 필터링 기능과 IP 주소 검색 기능이 있습니다.
 
-5. **상세 결과 조회**
+6. **상세 결과 조회**
 <p align="center">
 <img width="70%" alt="점검 대상 추가" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/5f735244-636d-4ea9-9bf5-8c6f03b61aa4">
 </p>
+
     - 각각의 이력마다 **상세 결과** 버튼이 있습니다.
     - **상세 결과** 버튼을 클릭하면 선택한 이력의 상세 결과를 조회할 수 있습니다.
 
-6. **세부 내용 확인**
+7. **세부 내용 확인**
 <p align="center">
 <img width="70%" alt="점검 대상 추가" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/3460c758-679b-46ff-96bd-3921bfaabb01">
 </p>
+
     - 선택한 이력의 상세 결과를 조회할 때, 각 결과별로 세부 내용을 확인할 수 있습니다.
     - **세부 내용** 버튼을 클릭하면 해당 점검 항목의 세부 내용들을 확인할 수 있습니다.
 
