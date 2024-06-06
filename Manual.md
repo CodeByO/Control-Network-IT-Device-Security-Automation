@@ -12,7 +12,8 @@
 2. **점검 항목 선택, 추가 및 실행**
 <p align="center">
 <img width="70%" alt="점검 대상 추가" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/bb876645-a0b1-44c7-bb27-44b6522cc3df">
-</p>
+</p>  
+
     - 점검할 시스템 및 점검할 항목들을 선택한 뒤, 중앙 하단에 위치한 **점검 실행** 버튼을 누르면 선택한 시스템에 선택한 점검 항목들에 대한 점검이 진행됩니다.  
 
     - 만약 기존의 점검 항목에 원하는 점검 항목이 없을 경우 좌측 하단에 위치한 **규제 지침 등록** 버튼을 누릅니다.  
