@@ -8,10 +8,10 @@
     - 우측 하단에 위치한 ">" 버튼을 클릭하여 다음 화면으로 넘어갑니다.
  
 2. **점검 항목 선택, 추가 및 실행**
-<div style="width:70%; margin:0 auto;">
-<a href="#"><img style="width:50%" alt="점검 항목 선택"src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/bb876645-a0b1-44c7-bb27-44b6522cc3df"></a>
-<a href="#"><img style="width:50%" alt="점검 항목 추가"src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/66ec5b9f-6749-45d6-84c1-e2ff67bdd1cd"></a>
-</div>
+<p align="center">
+  <img src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/bb876645-a0b1-44c7-bb27-44b6522cc3df" alt="점검 대상 추가" width="45%" style="margin-right: 10px;">
+  <img src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/66ec5b9f-6749-45d6-84c1-e2ff67bdd1cd" alt="다른 이미지" width="45%">
+</p>
     - 점검할 시스템 및 점검할 항목들을 선택한 뒤, 중앙 하단에 위치한 **점검 실행** 버튼을 누르면 선택한 시스템에 선택한 점검 항목들에 대한 점검이 진행됩니다.
     - 만약 기존의 점검 항목에 원하는 점검 항목이 없을 경우 좌측 하단에 위치한 **규제 지침 등록** 버튼을 누릅니다.
     - 추가로 등록하고 싶은 규제 지침에 대한 정보들을 선택 및 입력한 후, 중앙 하단에 위치한 **저장** 버튼을 눌러 기존 항목에 새롭게 작성한 점검 항목을 추가할 수 있습니다.
