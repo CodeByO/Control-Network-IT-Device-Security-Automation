@@ -3,9 +3,12 @@
 1. **점검 대상 추가**
 <p align="center">
 <img width="70%" alt="점검 대상 추가" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/07a2d1ea-04a2-4507-9460-b3556f70950d">
-</p>
+</p>  
+
     - 점검 대상 정보(점검 대상 OS, 접속 방식, 포트 번호, 시스템 명칭, 시스템 IP 주소, ID, 패스워드)를 입력한 뒤, **점검 대상 추가** 버튼을 클릭하여 점검할 시스템을 추가합니다.  
-    - 우측 하단에 위치한 ">" 버튼을 클릭하여 다음 화면으로 넘어갑니다.
+
+    - 우측 하단에 위치한 ">" 버튼을 클릭하여 다음 화면으로 넘어갑니다.  
+
 2. **점검 항목 선택, 추가 및 실행**
 <p align="center">
 <img width="70%" alt="점검 대상 추가" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/48281661/bb876645-a0b1-44c7-bb27-44b6522cc3df">
