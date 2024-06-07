@@ -1,3 +1,14 @@
+## 1. 프로그램 설치 방법
+1. **파일 구성 확인**
+<p align="center">
+<img width="70%" alt="파일 트리" src="https://github.com/CodeByO/Control-Network-IT-Device-Security-Automation/assets/19397483/372921c1-a31a-47e6-9b3d-609e7d425f47">
+</p>
+
+    - 점검 프로그램의 정상적인 동작을 위해서는 실행 파일, DB 파일 그리고 다양한 스크립트 들이 저장되어 있는 **script** 폴더가 하나의 폴더 하위에 존재해야 합니다.
+
+    - 이후 **InspectionAutomation.exe** 파일을 더블 클릭하여 실행하면 됩니다. 
+
+
 ## 2. 점검 실행 방법
 
 1. **점검 대상 추가**
