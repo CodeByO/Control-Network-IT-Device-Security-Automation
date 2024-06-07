@@ -158,8 +158,8 @@ def InspectionAutomation(target_name:str, target_os:str, connection_type:str, ip
     session = ConnectTarget(ip, port, connection_type, username, password)
     
     # 예시, 원격 연결에 문제가 생겼다면 1, 점검에 문제가 발생하면 2
-    # if session is None:
-    #     return 1, []
+    if session is None:
+        return 1, []
     
     # Result_Type - action, info, registry
     # CommandType - Powershell, cmd, terminal
@@ -174,12 +174,12 @@ def InspectionAutomation(target_name:str, target_os:str, connection_type:str, ip
     
     
     inspection_lists = ParseXml(target_os, plugin_dict)
-    # cursor = con.cursor()
-    # cursor.execute("INSERT INTO InspectionItems(TargetName, OSType, ConnectionType, IPAddress, PortNumber, RemoteID) VALUES(?,?,?,?,?)", (target_os, connection_type, ip, int(port), username))
-    # con.commit()
+    cursor = con.cursor()
+    cursor.execute("INSERT INTO InspectionItems(TargetName, OSType, ConnectionType, IPAddress, PortNumber, RemoteID) VALUES(?,?,?,?,?,?)", (target_name, target_os, connection_type, ip, int(port), username))
+    con.commit()
     
-    #items_id = cursor.lastrowid
-    items_id = 1
+    items_id = cursor.lastrowid
+    #items_id = 1
     result_data = list()
     for command in inspection_lists:
         inspection_status = 0
@@ -192,53 +192,50 @@ def InspectionAutomation(target_name:str, target_os:str, connection_type:str, ip
             command_type = value['CommandType']
             command_string = str(value['CommandString'])
         stdout, stderr = None, None
-        for _ in range(command_count):
-            if connection_type == "SSH":
-                # command_session = session.invoke_shell()
-                # command_session.settimeout(0.0)
-                # command_session.sendall(command_string.encode('ascii') + b'\n')
-                # stdout = command_session.recv(50000)
-                # if stdout is not None:  # stdout 변수가 None이 아닌지 확인
-                #     stdout = stdout.decode('ascii')
-                #     print(stdout)
-                # stdin, stdout, stderr = session.exec_command(command_string)
-                # stdout = stdout.read().decode('euc-kr').strip()
-                # stderr = stderr.read().decode('euc-kr').strip()
-                stdout = 'True'
-                print("stdout : " + stdout)
-                if stdout is not None:  # stdout 변수가 None이 아닌지 확인
-                    if result_type == "action":
-                        if 'True' in stdout:
-                            inspection_status = 1
-                    elif result_type == "info":
+        if connection_type == "SSH":
+            stdin, stdout, stderr = session.exec_command(command_string)
+            stdout = stdout.read().decode('euc-kr').strip()
+            stderr = stderr.read().decode('euc-kr').strip()
+
+            if stdout is not None:  # stdout 변수가 None이 아닌지 확인
+                if result_type == "action":
+                    if 'True' in stdout:
                         inspection_status = 1
-                    elif result_type == "registry":
-                        if stderr is not None:
-                            inspection_status = 1
-                else:
+                        inspection_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        cursor.execute("INSERT INTO InspectionResults(TargetID, ItemsID, InspectionStatus, InspectionOutput, InspectionError, InspectionDate) VALUES(?,?,?,?,?,?)", (target_id, items_id, inspection_status, stdout, stderr, inspection_date))
+                        con.commit()
+                        result_id = cursor.lastrowid
+                        #result_id = 1
+                        result_data.append([result_id, target_name, plugin_name, description, result_type, inspection_status] )
+                        stdout = None
+                elif result_type == "info" and len(stderr) == 0:
                     inspection_status = 1
-            elif connection_type == "samba":
-                try:
-                    if result_type == "action":
-                        if 'True' in stdout:
-                            inspection_status = 1
-                    elif result_type == "info":
-                        pass
-                    elif result_type == "registry":
-                        pass
-                except OperationFailure:
-                    pass
-        inspection_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    inspection_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    cursor.execute("INSERT INTO InspectionResults(TargetID, ItemsID, InspectionStatus, InspectionOutput, InspectionError, InspectionDate) VALUES(?,?,?,?,?,?)", (target_id, items_id, inspection_status, stdout, stderr, inspection_date))
+                    con.commit()
+                    result_id = cursor.lastrowid
+                    #result_id = 1
+                    result_data.append([result_id, target_name, plugin_name, description, result_type, inspection_status] )
+                    stdout = None
+                elif result_type == "registry" and len(stderr) == 0:
+                    if stderr is not None:
+                        inspection_status = 1
+            else:
+                inspection_status = 0
+        elif connection_type == "samba":
+            try:
+                if result_type == "action":
+                    if 'True' in stdout:
+                        inspection_status = 1
+                elif result_type == "info":
+                    inspection_status = 1
+                elif result_type == "registry":
+                    inspection_status = 1
+            except OperationFailure:
+                pass
         
-        
-        # cursor.execute("INSERT INTO InspectionResults(TargetID, ItemsID, InspectionStatus, InspectionOutput, InspectionError, InspectionDate) VALUES(?,?,?,?,?,?)", (target_id, items_id, inspection_status, stdout, stderr, inspection_date))
-        # con.commit()
-        #result_id = cursor.lastrowid
-        result_id = 1
-        result_data.append([result_id, target_name, plugin_name, description, result_type, inspection_status] )
     
-    
-    # con.close()
-    # # 세션 종료 시 사용(ssh, samba 동일)
-    # session.close()
+    con.close()
+    # 세션 종료 시 사용(ssh, samba 동일)
+    session.close()
     return 0, result_data
