@@ -2018,6 +2018,10 @@ class InspectionProgressPage(QWidget):
     def returnToHome(self):
         self.progress_table.clearContents()
         self.progress_table.setRowCount(0)
+        page = self.stackedWidget.widget(0)
+        self.stackedWidget.removeWidget(page)
+        main_page = MainPage(self.stackedWidget)
+        self.stackedWidget.insertWidget(0, main_page)
         self.stackedWidget.setCurrentIndex(0) # 점검 대상 등록 페이지로 돌아가기
     
     # [Func] cancelInspection
