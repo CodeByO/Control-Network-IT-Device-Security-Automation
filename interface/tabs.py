@@ -294,13 +294,11 @@ class MainPage(QWidget):
             }
         """)
 
-        # 테스트용 점검 대상 추가 - 추후 필수 삭제
-        add_target_button.clicked.connect(lambda:self.testTarget())
-        
-        # add_target_button.clicked.connect(lambda: self.add_target_button_clicked(system_line_edit,
-        #                                                                          self.os_type, self.connection_type,
-        #                                                                          ip_line_edit, port_line_edit,
-        #                                                                          id_line_edit, password_line_edit))
+
+        add_target_button.clicked.connect(lambda: self.add_target_button_clicked(system_line_edit,
+                                                                                 self.os_type, self.connection_type,
+                                                                                 ip_line_edit, port_line_edit,
+                                                                                 id_line_edit, password_line_edit))
         # '점검 대상 추가' 버튼을 레이아웃에 추가하고 양쪽에 Stretch를 추가하여 중앙에 위치하도록 함
         button_layout.addStretch(1)
         button_layout.addWidget(add_target_button)
@@ -362,53 +360,6 @@ class MainPage(QWidget):
 
         return vulnerability_check_tab
     
-    # 테스트용 함수 -> 추후 필수 삭제
-    def testTarget(self):
-        ipAddr = "172.26.245.114"
-        rowPosition = self.target_lists_table.rowCount()
-        self.target_lists_table.insertRow(rowPosition)
-        self.target_lists_table.setItem(rowPosition, 0, QTableWidgetItem("test"))
-        self.target_lists_table.setItem(rowPosition, 1, QTableWidgetItem("Windows"))
-        self.target_lists_table.setItem(rowPosition, 2, QTableWidgetItem("SSH"))
-        self.target_lists_table.setItem(rowPosition, 3, QTableWidgetItem(ipAddr))
-
-        # 삭제 버튼 추가
-        btnDelete = QPushButton("삭제")
-        btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
-        btnDelete.setFixedSize(55, 25)
-        btnDelete.setFont(QFont("NanumBarunGothic", 8))  # NanumBarunGothic 폰트로 설정
-        btnDelete.setStyleSheet("""
-                                QPushButton {
-                                    color: #EA4335;
-                                    background-color: #FFFFFF;
-                                    border: 1px solid #EA4335;
-                                    border-radius: 4px;}
-                                QPushButton:hover {
-                                    color: #CB2215;
-                                    background-color: #B9B9B9;
-                                    border: 1px solid #CB2215;}
-                                QPushButton:pressed {
-                                    color: #CB2215;
-                                    background-color: #B9B9B9;
-                                    border: 1px solid #CB2215;}
-                                """)
-        # 버튼을 중앙 정렬하기 위해 QWidget을 생성하고 레이아웃 설정
-        widget = QWidget()
-        layout = QHBoxLayout()
-        layout.addWidget(btnDelete)
-        layout.setAlignment(Qt.AlignCenter)
-        layout.setContentsMargins(0, 0, 0, 0)
-        widget.setLayout(layout)
-        self.target_lists_table.setCellWidget(rowPosition, 4, widget)
-        
-        # 글자 크기 조절
-        for column in range(self.target_lists_table.columnCount()):
-            item = self.target_lists_table.item(rowPosition, column)
-            if item is not None:
-                item.setFont(QFont("NanumBarunGothic", 8))  # 여기서 폰트와 크기 조절 가능
-                item.setTextAlignment(Qt.AlignCenter)
-        
-        self.input_target_lists.append(["test", "Windows", "SSH", ipAddr, "22", "etri", "2345"])
     @pyqtSlot()
     def osTypeSelect(self):
         if self.os_type_windows.isChecked():
@@ -476,7 +427,8 @@ class MainPage(QWidget):
         _target_name = target_name.text()
         _ip = ip.text()
         _port = port.text()
-
+        _id = id.text()
+        _password = password.text()
         if _target_name in self.input_target_lists:
             self.ShowAlert("이미 해당 시스템 장치명을 가진 점검 대상이 존재합니다.")
             return
@@ -525,7 +477,7 @@ class MainPage(QWidget):
         id.clear()
         password.clear()
 
-        self.input_target_lists.append([_target_name, os_type, connection_type, _ip, _port, id, password])
+        self.input_target_lists.append([_target_name, os_type, connection_type, _ip, _port, _id, _password])
 
 
     # [Func] deleteRow
@@ -584,6 +536,9 @@ class MainPage(QWidget):
         
         self.inspection_list_page.SetData(windows_inspection_targets, linux_inspection_targets)
         self.inspection_list_page.SetTarget(self.input_target_lists)
+        self.target_lists_table.clearContents()
+        self.target_lists_table.setRowCount(0)
+        self.input_target_lists = list()
         for i in range(self.stackedWidget.count()):
             if self.stackedWidget.widget(i) == self.inspection_list_page:
                 # 스택에 페이지가 이미 존재할 경우 그냥 이동
@@ -733,9 +688,8 @@ class MainPage(QWidget):
                         target_select_list = list(cursor.fetchone())
                         new_value = [target_select_list[i] for i in range(1, len(target_select_list))] + value
                         target_result[target_select_list[0]] = new_value
-                
                 self.result_dict[item]["targets"] = target_result
-        
+
         con.close()
             
         for item_id, item_data in self.result_dict.items():
@@ -746,15 +700,13 @@ class MainPage(QWidget):
             self.history_table.setItem(row_position, 1, QTableWidgetItem(item_data['items'][1]))  # 장치 이름
             self.history_table.setItem(row_position, 2, QTableWidgetItem(item_data['items'][2]))  # 대상 OS
             self.history_table.setItem(row_position, 3, QTableWidgetItem(item_data['items'][4]))  # IP 주소
-            
-            
 
             # '상세 결과' 버튼 추가
             detail_result_btn = QPushButton('상세 결과')
             btn_font = QFont("NanumBarunGothic", 8)
             detail_result_btn.setFont(btn_font)
             detail_result_btn.setFixedSize(57, 27)
-            detail_result_btn.clicked.connect(lambda _, row=row_position: self.DetailResult(row, item_data['targets']))
+            detail_result_btn.clicked.connect(lambda _, row=row_position, targets=item_data['targets']: self.DetailResult(row, targets))
             detail_result_btn.setStyleSheet("""
                                 QPushButton {
                                     color: #1A73E8;
@@ -792,7 +744,6 @@ class MainPage(QWidget):
     # [TODO] 에러 테스트
     # [ISSUE] None      
     def DetailResult(self, row, targets_data):
-
         # 선택된 행의 데이터 가져오기
         date = self.history_table.item(row, 0).text()  # 날짜
         os = self.history_table.item(row, 1).text()    # OS
@@ -860,13 +811,12 @@ class MainPage(QWidget):
             item_2.setFont(table_font)
             item_2.setTextAlignment(Qt.AlignCenter)
             self.detail_table.setItem(row_position, 2, item_2)
-
-            item_3 = QTableWidgetItem(target_info[5])  # 결과
+            item_3 = QTableWidgetItem("성공" if target_info[5] else "실패")  # 결과
             item_3.setFont(header_font)
             item_3.setTextAlignment(Qt.AlignCenter)
-            if item_3 == "성공":
+            if item_3.text() == "성공":
                 item_3.setForeground(QBrush(QColor("#00B050")))
-            elif item_3 == "실패":
+            elif item_3.text() == "실패":
                 item_3.setForeground(QBrush(QColor("#EA4335")))
             self.detail_table.setItem(row_position, 3, item_3)
 
@@ -890,7 +840,7 @@ class MainPage(QWidget):
                                     background-color: #B9B9B9;
                                     border: 1px solid #1256B0;}
                                 """)
-            detail_btn.clicked.connect(lambda _, row=row_position: self.ItemDetails(row, target_info))
+            detail_btn.clicked.connect(lambda _, row=row_position, target_data = target_info: self.ItemDetails(row, target_data))
 
             widget = QWidget()
             btn_layout = QHBoxLayout(widget)
@@ -911,6 +861,9 @@ class MainPage(QWidget):
     # [TODO] 에러 테스트
     # [ISSUE] None    
     def ItemDetails(self, row, target_info):
+        button = self.sender()
+        widget = button.parent()  # Get the parent widget of the button
+        index = self.detail_table.indexAt(widget.pos())
         # 선택된 행의 데이터 가져오기
         info = self.detail_table.item(row, 0).text()        # 점검 항목
         description = self.detail_table.item(row, 1).text() # 점검 내용
@@ -1184,7 +1137,8 @@ class InspectionListPage(QWidget):
         self.inspection_list_table.setColumnWidth(4, 80)
         self.inspection_list_table.setColumnWidth(5, 80)
         self.inspection_list_table.setColumnWidth(6, 30)
-        
+        self.inspection_list_table.clearContents()
+        self.inspection_list_table.setRowCount(0)
     # [Func] AddInspectionList
     # [DESC] 규제 지침 등록 화면
     # [TODO] 예외 처리
@@ -1447,7 +1401,9 @@ class InspectionListPage(QWidget):
         
         if len(plugin_dict) == 0:
             self.ShowAlert("최소한 하나의 규제 지침을 선택해 주세요")
-            return 
+            return
+        self.inspection_target_table.clearContents()
+        self.inspection_target_table.setRowCount(0)
         self.inspection_progress_page.setInspectionData(selected_targets_list, plugin_dict)
         for i in range(self.stackedWidget.count()):
             if self.stackedWidget.widget(i) == self.inspection_progress_page:
@@ -1776,6 +1732,8 @@ class InspectionProgressPage(QWidget):
     # [TODO] None
     # [ISSUE] None
     def runInspection(self):
+        self.progress_table.clearContents()
+        self.progress_table.setRowCount(0)
         for target in self.target_list:
             target_plugin = dict()
             plugin_len = 0
@@ -1812,6 +1770,8 @@ class InspectionProgressPage(QWidget):
             rowPosition = self.progress_table.rowCount()
             self.progress_table.insertRow(rowPosition)
             result_id = result.pop(0)
+            self.progress_table.setItem(rowPosition, 6, QTableWidgetItem(str(result_id)))
+            self.progress_table.setColumnHidden(6, True)
             for i, data in enumerate(result):
                 
                 if str(data).isdigit():
@@ -1847,7 +1807,7 @@ class InspectionProgressPage(QWidget):
                                     border: 1px solid #1256B0;}
                                 """)
             detail_result_btn.setFont(QFont("NanumBarunGothic", 8))  # NanumBarunGothic 폰트로 설정
-            detail_result_btn.clicked.connect(lambda: self.ItemDetails(detail_result_btn))
+            detail_result_btn.clicked.connect(self.ItemDetails)
             # 버튼을 중앙 정렬하기 위해 QWidget을 생성하고 레이아웃 설정
             widget = QWidget()
             layout = QHBoxLayout()
@@ -1856,167 +1816,169 @@ class InspectionProgressPage(QWidget):
             layout.setContentsMargins(0, 0, 0, 0)
             widget.setLayout(layout)
             self.progress_table.setCellWidget(rowPosition, 5, widget)
-            self.progress_table.setItem(rowPosition, 6, QTableWidgetItem(str(result_id)))
-            self.progress_table.setColumnHidden(6, True)
+            
             
     # [Func] ItemDetails
     # [DESC] 점검 항목의 세부 내용을 보여줌
     # [TODO] 에러 테스트
     # [ISSUE] None    
-    def ItemDetails(self, button):
-        item = self.progress_table.indexAt(button.pos())
-        result_id = self.progress_table.item(item.row(), 6).text()
-        
-        detail_dialog = QDialog(self)  # 세부 내용 창
-        detail_dialog.setWindowTitle("세부 내용")
-        detail_dialog.resize(730, 680)
-        
-        font = QFont("NanumBarunGothic", 9)
-        bold_font = QFont("NanumBarunGothic", 9, QFont.Bold)
-        result_font = QFont("NanumBarunGothic", 18, QFont.Bold)
-        layout = QVBoxLayout()
-        
-        global path_database
-        
-        if not os.path.exists(path_database):
-            self.ShowAlert("DB가 존재하지 않습니다.")
-            return
+    def ItemDetails(self):
+        button = self.sender()
+        widget = button.parent()  # Get the parent widget of the button
+        item = self.progress_table.indexAt(widget.pos())
+        if item.isValid():
+            
+            result_id = self.progress_table.item(item.row(), 6).text()
+            detail_dialog = QDialog(self)  # 세부 내용 창
+            detail_dialog.setWindowTitle("세부 내용")
+            detail_dialog.resize(730, 680)
+            
+            font = QFont("NanumBarunGothic", 9)
+            bold_font = QFont("NanumBarunGothic", 9, QFont.Bold)
+            result_font = QFont("NanumBarunGothic", 18, QFont.Bold)
+            layout = QVBoxLayout()
+            
+            global path_database
+            
+            if not os.path.exists(path_database):
+                self.ShowAlert("DB가 존재하지 않습니다.")
+                return
 
-        con = sqlite3.connect(path_database)
-        cursor = con.cursor()
+            con = sqlite3.connect(path_database)
+            cursor = con.cursor()
 
-        #db에서 내용불러오기
-        try:
-            cursor.execute("SELECT * FROM InspectionResults WHERE ResultID=?", (result_id, ))
-        except (sqlite3.OperationalError, sqlite3.ProgrammingError):
-            self.ShowAlert("DB 실행 에러")
-            return 
-
-        inspection_results = list(cursor.fetchone())
-        if len(inspection_results) != 0:
-            target_id = inspection_results[1]
-            items_id = inspection_results[2]
+            #db에서 내용불러오기
             try:
-                cursor.execute("SELECT * from InspectionItems WHERE ItemsID=?",(items_id,))
+                cursor.execute("SELECT * FROM InspectionResults WHERE ResultID=?", (result_id, ))
             except (sqlite3.OperationalError, sqlite3.ProgrammingError):
                 self.ShowAlert("DB 실행 에러")
-                return
-            inspection_items = list(cursor.fetchone())
-            try:
-                cursor.execute("SELECT CommandName, CommandType, CommandString  from InspectionTargets WHERE TargetID=?",(target_id,))
-            except (sqlite3.OperationalError, sqlite3.ProgrammingError):
-                self.ShowAlert("DB 실행 에러")
-                return
-            inspection_targets = list(cursor.fetchone())
-        
-        con.close()
-        # '시스템 장치명', '점검 항목', '점검 내용', '결과 방식', '점검 결과'
-        # 선택된 행의 데이터 가져오기
-        info = self.progress_table.item(item.row(), 1).text()        # 점검 항목
-        description = self.progress_table.item(item.row(), 2).text() # 점검 내용
-        result_type = self.progress_table.item(item.row(), 3).text() # 결과 방식
-        result = self.progress_table.item(item.row(), 4).text()      # 점검 결과
-        
-        # 점검 결과에 따른 이미지와 글씨색 설정
-        if result == "성공":
-            result_icon = QLabel()
-            result_icon.setPixmap(QPixmap("interface/o.png").scaled(30, 30, Qt.KeepAspectRatio))
-            result_content = QLabel(result)
-            result_content.setFont(result_font)
-            result_content.setStyleSheet("color: #00B050;")
-        else: # "실패"
-            result_icon = QLabel()
-            result_icon.setPixmap(QPixmap("interface/x.png").scaled(30, 30, Qt.KeepAspectRatio))
-            result_content = QLabel(result)
-            result_content.setFont(result_font)
-            result_content.setStyleSheet("color: #FF0000;")
+                return 
 
-        result_content.setFixedHeight(50)
-        result_layout = QHBoxLayout()
-        result_layout.setContentsMargins(0, 20, 0, 10)
-        result_layout.addStretch()
-        result_layout.addWidget(result_icon)
-        result_layout.addWidget(result_content)
-        result_layout.addStretch()
-        layout.addLayout(result_layout)
+            inspection_results = list(cursor.fetchone())
+            if len(inspection_results) != 0:
+                target_id = inspection_results[1]
+                items_id = inspection_results[2]
+                try:
+                    cursor.execute("SELECT * from InspectionItems WHERE ItemsID=?",(items_id,))
+                except (sqlite3.OperationalError, sqlite3.ProgrammingError):
+                    self.ShowAlert("DB 실행 에러")
+                    return
+                inspection_items = list(cursor.fetchone())
+                try:
+                    cursor.execute("SELECT CommandName, CommandType, CommandString  from InspectionTargets WHERE TargetID=?",(target_id,))
+                except (sqlite3.OperationalError, sqlite3.ProgrammingError):
+                    self.ShowAlert("DB 실행 에러")
+                    return
+                inspection_targets = list(cursor.fetchone())
+            
+            con.close()
+            # '시스템 장치명', '점검 항목', '점검 내용', '결과 방식', '점검 결과'
+            # 선택된 행의 데이터 가져오기
+            info = self.progress_table.item(item.row(), 1).text()        # 점검 항목
+            description = self.progress_table.item(item.row(), 2).text() # 점검 내용
+            result_type = self.progress_table.item(item.row(), 3).text() # 결과 방식
+            result = self.progress_table.item(item.row(), 4).text()      # 점검 결과
+            
+            # 점검 결과에 따른 이미지와 글씨색 설정
+            if result == "성공":
+                result_icon = QLabel()
+                result_icon.setPixmap(QPixmap("interface/o.png").scaled(30, 30, Qt.KeepAspectRatio))
+                result_content = QLabel(result)
+                result_content.setFont(result_font)
+                result_content.setStyleSheet("color: #00B050;")
+            else: # "실패"
+                result_icon = QLabel()
+                result_icon.setPixmap(QPixmap("interface/x.png").scaled(30, 30, Qt.KeepAspectRatio))
+                result_content = QLabel(result)
+                result_content.setFont(result_font)
+                result_content.setStyleSheet("color: #FF0000;")
 
-        line1 = QFrame()
-        line1.setFrameShape(QFrame.HLine)
-        line1.setFrameShadow(QFrame.Sunken)
-        line1.setStyleSheet("color: #A6A6A6;")
-        layout.addWidget(line1)
-                
-        # 점검 결과, 점검 항목, 점검 내용, 결과 방식
-        labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
-        contents = [info, description, result_type]
+            result_content.setFixedHeight(50)
+            result_layout = QHBoxLayout()
+            result_layout.setContentsMargins(0, 20, 0, 10)
+            result_layout.addStretch()
+            result_layout.addWidget(result_icon)
+            result_layout.addWidget(result_content)
+            result_layout.addStretch()
+            layout.addLayout(result_layout)
 
-        for label_text, content_text in zip(labels_texts, contents):
-            item_layout = QHBoxLayout()
-            label = QLabel(label_text)
-            label.setFont(bold_font)
-            content = QLabel(content_text)
-            content.setFont(font)
-            content.setText(content_text)
-            content.setFixedWidth(580)
-            item_layout.addWidget(label)
-            item_layout.addWidget(content)
-    
-            layout.addLayout(item_layout)
+            line1 = QFrame()
+            line1.setFrameShape(QFrame.HLine)
+            line1.setFrameShadow(QFrame.Sunken)
+            line1.setStyleSheet("color: #A6A6A6;")
+            layout.addWidget(line1)
+                    
+            # 점검 결과, 점검 항목, 점검 내용, 결과 방식
+            labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
+            contents = [info, description, result_type]
 
-        line2 = QFrame()
-        line2.setFrameShape(QFrame.HLine)
-        line2.setFrameShadow(QFrame.Sunken)
-        line2.setStyleSheet("color: #A6A6A6;")
-        layout.addWidget(line2)
-
-        inspection_targets = inspection_targets + [inspection_results[4], inspection_results[5]]
-        # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
-        for label_text, content_text in zip(["CommandName", "CommandType", "CommandString"], inspection_targets[:3]):
-            item_layout = QHBoxLayout()
-            item_layout.setContentsMargins(0, 10, 0, 10)
-            label = QLabel(label_text)
-            label.setFont(bold_font)
-            if label_text == "CommandString":
-                content = QTextEdit()
+            for label_text, content_text in zip(labels_texts, contents):
+                item_layout = QHBoxLayout()
+                label = QLabel(label_text)
+                label.setFont(bold_font)
+                content = QLabel(content_text)
                 content.setFont(font)
-                content.setReadOnly(True)
-                content.setFixedHeight(70)
-                content.setFixedWidth(585)
-                content.setStyleSheet("QTextEdit {border: 1px solid #FFFFFF;}")
-            else:
+                content.setText(content_text)
+                content.setFixedWidth(580)
+                item_layout.addWidget(label)
+                item_layout.addWidget(content)
+        
+                layout.addLayout(item_layout)
+
+            line2 = QFrame()
+            line2.setFrameShape(QFrame.HLine)
+            line2.setFrameShadow(QFrame.Sunken)
+            line2.setStyleSheet("color: #A6A6A6;")
+            layout.addWidget(line2)
+
+            inspection_targets = inspection_targets + [inspection_results[4], inspection_results[5]]
+            # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
+            for label_text, content_text in zip(["CommandName", "CommandType", "CommandString"], inspection_targets[:3]):
+                item_layout = QHBoxLayout()
+                item_layout.setContentsMargins(0, 10, 0, 10)
+                label = QLabel(label_text)
+                label.setFont(bold_font)
+                if label_text == "CommandString":
+                    content = QTextEdit()
+                    content.setFont(font)
+                    content.setReadOnly(True)
+                    content.setFixedHeight(70)
+                    content.setFixedWidth(585)
+                    content.setStyleSheet("QTextEdit {border: 1px solid #FFFFFF;}")
+                else:
+                    content = QLabel(content_text)
+                    content.setFont(font)
+                    content.setFixedWidth(580)
+                content.setText(content_text)
+        
+                item_layout.addWidget(label)
+                item_layout.addWidget(content)
+        
+                layout.addLayout(item_layout)
+
+            line3 = QFrame()
+            line3.setFrameShape(QFrame.HLine)
+            line3.setFrameShadow(QFrame.Sunken)
+            line3.setStyleSheet("color: #A6A6A6;")
+            layout.addWidget(line3)
+            
+            # 출력 메시지, 에러 메시지
+            for label_text, content_text in zip(["출력 메시지", "에러 메시지"], inspection_targets[3:5]):
+                item_layout = QHBoxLayout()
+                label = QLabel(label_text)
+                label.setFont(bold_font)
                 content = QLabel(content_text)
                 content.setFont(font)
                 content.setFixedWidth(580)
-            content.setText(content_text)
-    
-            item_layout.addWidget(label)
-            item_layout.addWidget(content)
-    
-            layout.addLayout(item_layout)
-
-        line3 = QFrame()
-        line3.setFrameShape(QFrame.HLine)
-        line3.setFrameShadow(QFrame.Sunken)
-        line3.setStyleSheet("color: #A6A6A6;")
-        layout.addWidget(line3)
+                content.setText(content_text)
         
-        # 출력 메시지, 에러 메시지
-        for label_text, content_text in zip(["출력 메시지", "에러 메시지"], inspection_targets[3:5]):
-            item_layout = QHBoxLayout()
-            label = QLabel(label_text)
-            label.setFont(bold_font)
-            content = QLabel(content_text)
-            content.setFont(font)
-            content.setFixedWidth(580)
-            content.setText(content_text)
-    
-            item_layout.addWidget(label)
-            item_layout.addWidget(content)
-    
-            layout.addLayout(item_layout)
+                item_layout.addWidget(label)
+                item_layout.addWidget(content)
+        
+                layout.addLayout(item_layout)
 
-        detail_dialog.setLayout(layout)
-        detail_dialog.exec_()
+            detail_dialog.setLayout(layout)
+            detail_dialog.exec_()
     
     # [Func] goBack
     # [DESC] 뒤로 가기 버튼 클릭 이벤트 핸들러
@@ -2045,6 +2007,8 @@ class InspectionProgressPage(QWidget):
     # [TODO] None
     # [ISSUE] None      
     def setInspectionData(self, target_list:list, plugin_dict:dict):
+        self.target_list = list()
+        self.plugin_dict = dict()
         self.target_list = target_list
         self.plugin_dict = plugin_dict
         progress_bar_len = 0
