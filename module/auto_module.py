@@ -3,7 +3,6 @@
 # [Writer] CodeByO
 
 import os
-from pathlib import Path
 from datetime import datetime
 from tqdm import tqdm
 import signal
@@ -21,7 +20,7 @@ import xml.etree.ElementTree as ET
 
 import sqlite3
 
-path_src = Path(__file__)
+path_src = os.path.abspath(__file__)
 
 # [Func] ConnectTarget
 # [DESC] 보안 취약점 점검 대상 PC에 접속
@@ -81,13 +80,14 @@ def ParseXml(target_os:str, plugin_dict : dict)->list:
     :return: 
         XML 파일에서 파싱한 dict 데이터 리스트
     """
-    path_script = path_src.parent.parent / 'script'
+    path_script = os.path.join(os.path.dirname(os.path.dirname(path_src)), 'script')
     script_files = os.listdir(path_script)
     inspection_lists = []
     for script_file in script_files:
-        script_path = path_script / script_file
-        if script_path.suffix.lower() == ".xml":
-            xmlstring = Path(script_path).read_text(encoding='utf-8')
+        script_path = os.path.join(path_script, script_file)
+        if script_file.lower().endswith(".xml"):
+            with open(script_path, 'r', encoding='utf-8') as file:
+                xmlstring = file.read()
             soup = bf(xmlstring, features="xml")
             try:
                 target = soup.find('TargetOS').text
@@ -163,8 +163,7 @@ def InspectionAutomation(target_name:str, target_os:str, connection_type:str, ip
     
     # Result_Type - action, info, registry
     # CommandType - Powershell, cmd, terminal
-    global path_src
-    path_database = path_src.parent.parent / "interface" / "AutoInspection.db"
+    path_database = os.path.join(os.path.dirname(os.path.dirname(path_src)), "interface", "AutoInspection.db")
    
     if os.path.exists(path_database):
         con = sqlite3.connect(path_database)

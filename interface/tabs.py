@@ -6,7 +6,6 @@ import re
 import os
 import sys
 import sqlite3
-from pathlib import Path
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from PyQt5.QtWidgets import (QVBoxLayout, QRadioButton, QComboBox, QLineEdit, QApplication, QMainWindow,
@@ -16,13 +15,12 @@ from PyQt5.QtWidgets import (QVBoxLayout, QRadioButton, QComboBox, QLineEdit, QA
 from PyQt5.QtCore import Qt, QRect, pyqtSlot, QRect
 from PyQt5.QtGui import QPainter, QTransform, QFont, QBrush, QColor, QPixmap
 
-sys.path.append(os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ))
 
-from module.auto_module import InspectionAutomation
+from auto_module import InspectionAutomation
 
-path_src = Path(__file__)
-path_database = path_src.parent / "AutoInspection.db"
-path_script = path_src.parent.parent / 'script'
+path_src = os.path.abspath(__file__)
+path_database = os.path.join(os.path.dirname(os.path.dirname(path_src)), "AutoInspection.db")
+path_script = os.path.join(os.path.dirname(os.path.dirname(path_src)), 'script')
 
 windows_inspection_targets = list()
 linux_inspection_targets = list()
