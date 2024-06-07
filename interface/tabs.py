@@ -461,7 +461,7 @@ class MainPage(QWidget):
         self.target_lists_table.setItem(rowPosition, 3, QTableWidgetItem(_ip))
         # 삭제 버튼 추가
         btnDelete = QPushButton("삭제")
-        btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
+        btnDelete.clicked.connect(self.deleteRow)
         self.target_lists_table.setCellWidget(rowPosition, 4, btnDelete)
 
         
@@ -485,7 +485,9 @@ class MainPage(QWidget):
     # [TODO] None
     # [ISSUE] None
     def deleteRow(self, button):
-        index = self.target_lists_table.indexAt(button.pos())
+        button = self.sender()
+        widget = button.parent()  # Get the parent widget of the button
+        index = self.target_lists_table.indexAt(widget.pos())
         if index.isValid():
             self.target_lists_table.removeRow(index.row())
 
@@ -874,10 +876,15 @@ class MainPage(QWidget):
         detail_dialog.setWindowTitle("세부 내용")
         detail_dialog.resize(730, 680)
 
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+
         font = QFont("NanumBarunGothic", 9)
         bold_font = QFont("NanumBarunGothic", 9, QFont.Bold)
         result_font = QFont("NanumBarunGothic", 18, QFont.Bold)
-        layout = QVBoxLayout()
 
         # 점검 결과에 따른 이미지와 글씨색 설정
         if result == "성공":
@@ -886,7 +893,7 @@ class MainPage(QWidget):
             result_content = QLabel(result)
             result_content.setFont(result_font)
             result_content.setStyleSheet("color: #00B050;")
-        else: # 실패
+        else:  # 실패
             result_icon = QLabel()
             result_icon.setPixmap(QPixmap("interface/x.png").scaled(30, 30, Qt.KeepAspectRatio))
             result_content = QLabel(result)
@@ -900,14 +907,14 @@ class MainPage(QWidget):
         result_layout.addWidget(result_icon)
         result_layout.addWidget(result_content)
         result_layout.addStretch()
-        layout.addLayout(result_layout)
+        scroll_layout.addLayout(result_layout)
 
         line1 = QFrame()
         line1.setFrameShape(QFrame.HLine)
         line1.setFrameShadow(QFrame.Sunken)
         line1.setStyleSheet("color: #A6A6A6;")
-        layout.addWidget(line1)
-        
+        scroll_layout.addWidget(line1)
+
         # 점검 결과, 점검 항목, 점검 내용, 결과 방식
         labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
         contents = [info, description, result_type]
@@ -922,14 +929,14 @@ class MainPage(QWidget):
             content.setFixedWidth(580)
             item_layout.addWidget(label)
             item_layout.addWidget(content)
-    
-            layout.addLayout(item_layout)
+        
+            scroll_layout.addLayout(item_layout)
 
         line2 = QFrame()
         line2.setFrameShape(QFrame.HLine)
         line2.setFrameShadow(QFrame.Sunken)
         line2.setStyleSheet("color: #A6A6A6;")
-        layout.addWidget(line2)
+        scroll_layout.addWidget(line2)
 
         # CommandName, CommandType, CommandString의 정보 표시
         for label_text, content_text in zip(["CommandName", "CommandType", "CommandString"], [target_info[i] for i in [2, 3, 4]]):
@@ -949,17 +956,17 @@ class MainPage(QWidget):
                 content.setFont(font)
                 content.setFixedWidth(580)
             content.setText(content_text)
-    
+        
             item_layout.addWidget(label)
             item_layout.addWidget(content)
-    
-            layout.addLayout(item_layout)
+        
+            scroll_layout.addLayout(item_layout)
 
         line3 = QFrame()
         line3.setFrameShape(QFrame.HLine)
         line3.setFrameShadow(QFrame.Sunken)
         line3.setStyleSheet("color: #A6A6A6;")
-        layout.addWidget(line3)
+        scroll_layout.addWidget(line3)
         
         # 출력 메시지, 에러 메시지 정보 표시
         for label_text, content_text in zip(["출력 메시지", "에러 메시지"], [target_info[i] for i in [6, 7]]):
@@ -970,13 +977,18 @@ class MainPage(QWidget):
             content.setFont(font)
             content.setFixedWidth(580)
             content.setText(content_text)
-    
+        
             item_layout.addWidget(label)
             item_layout.addWidget(content)
-    
-            layout.addLayout(item_layout)
+        
+            scroll_layout.addLayout(item_layout)
 
-        detail_dialog.setLayout(layout)
+        scroll_area.setWidget(scroll_content)
+
+        dialog_layout = QVBoxLayout(detail_dialog)
+        dialog_layout.addWidget(scroll_area)
+
+        detail_dialog.setLayout(dialog_layout)
         detail_dialog.exec_()
 
 
@@ -1329,7 +1341,7 @@ class InspectionListPage(QWidget):
         
         # 삭제 버튼 추가
         btnDelete = QPushButton("삭제")
-        btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
+        btnDelete.clicked.connect(self.deleteRow)
         btnDelete.setFixedSize(55, 25)
         btnDelete.setFont(QFont("NanumBarunGothic", 8))  # NanumBarunGothic 폰트로 설정
         btnDelete.setStyleSheet("""
@@ -1467,7 +1479,7 @@ class InspectionListPage(QWidget):
         self.inspection_list_table.setItem(rowPosition, 5, QTableWidgetItem(action))
         # 삭제 버튼 추가
         btnDelete = QPushButton("삭제")
-        btnDelete.clicked.connect(lambda: self.deleteRow(btnDelete))
+        btnDelete.clicked.connect(self.deleteRow)
         btnDelete.setFixedSize(55, 25)
         btnDelete.setFont(QFont("NanumBarunGothic", 8))  # NanumBarunGothic 폰트로 설정
         btnDelete.setStyleSheet("""
@@ -1510,7 +1522,9 @@ class InspectionListPage(QWidget):
     # [TODO] None
     # [ISSUE] None
     def deleteRow(self, button):
-        index = self.inspection_list_table.indexAt(button.pos())
+        button = self.sender()
+        widget = button.parent()  # Get the parent widget of the button
+        index = self.inspection_list_table.indexAt(widget.pos())
         if index.isValid():
             self.inspection_list_table.removeRow(index.row())
             target_id = self.inspection_list_table.item(index.row(), 7).text()
@@ -1836,8 +1850,13 @@ class InspectionProgressPage(QWidget):
             font = QFont("NanumBarunGothic", 9)
             bold_font = QFont("NanumBarunGothic", 9, QFont.Bold)
             result_font = QFont("NanumBarunGothic", 18, QFont.Bold)
-            layout = QVBoxLayout()
-            
+
+            scroll_area = QScrollArea()
+            scroll_area.setWidgetResizable(True)
+
+            scroll_content = QWidget()
+            scroll_layout = QVBoxLayout(scroll_content)
+
             global path_database
             
             if not os.path.exists(path_database):
@@ -1847,7 +1866,7 @@ class InspectionProgressPage(QWidget):
             con = sqlite3.connect(path_database)
             cursor = con.cursor()
 
-            #db에서 내용불러오기
+            # db에서 내용불러오기
             try:
                 cursor.execute("SELECT * FROM InspectionResults WHERE ResultID=?", (result_id, ))
             except (sqlite3.OperationalError, sqlite3.ProgrammingError):
@@ -1900,13 +1919,13 @@ class InspectionProgressPage(QWidget):
             result_layout.addWidget(result_icon)
             result_layout.addWidget(result_content)
             result_layout.addStretch()
-            layout.addLayout(result_layout)
+            scroll_layout.addLayout(result_layout)
 
             line1 = QFrame()
             line1.setFrameShape(QFrame.HLine)
             line1.setFrameShadow(QFrame.Sunken)
             line1.setStyleSheet("color: #A6A6A6;")
-            layout.addWidget(line1)
+            scroll_layout.addWidget(line1)
                     
             # 점검 결과, 점검 항목, 점검 내용, 결과 방식
             labels_texts = ["점검 항목", "점검 내용", "결과 방식"]
@@ -1923,13 +1942,13 @@ class InspectionProgressPage(QWidget):
                 item_layout.addWidget(label)
                 item_layout.addWidget(content)
         
-                layout.addLayout(item_layout)
+                scroll_layout.addLayout(item_layout)
 
             line2 = QFrame()
             line2.setFrameShape(QFrame.HLine)
             line2.setFrameShadow(QFrame.Sunken)
             line2.setStyleSheet("color: #A6A6A6;")
-            layout.addWidget(line2)
+            scroll_layout.addWidget(line2)
 
             inspection_targets = inspection_targets + [inspection_results[4], inspection_results[5]]
             # CommandName, CommandType, CommandString, 출력 메시지는 db에서 불러올 예정
@@ -1954,13 +1973,13 @@ class InspectionProgressPage(QWidget):
                 item_layout.addWidget(label)
                 item_layout.addWidget(content)
         
-                layout.addLayout(item_layout)
+                scroll_layout.addLayout(item_layout)
 
             line3 = QFrame()
             line3.setFrameShape(QFrame.HLine)
             line3.setFrameShadow(QFrame.Sunken)
             line3.setStyleSheet("color: #A6A6A6;")
-            layout.addWidget(line3)
+            scroll_layout.addWidget(line3)
             
             # 출력 메시지, 에러 메시지
             for label_text, content_text in zip(["출력 메시지", "에러 메시지"], inspection_targets[3:5]):
@@ -1975,10 +1994,16 @@ class InspectionProgressPage(QWidget):
                 item_layout.addWidget(label)
                 item_layout.addWidget(content)
         
-                layout.addLayout(item_layout)
+                scroll_layout.addLayout(item_layout)
 
-            detail_dialog.setLayout(layout)
+            scroll_area.setWidget(scroll_content)
+
+            dialog_layout = QVBoxLayout(detail_dialog)
+            dialog_layout.addWidget(scroll_area)
+
+            detail_dialog.setLayout(dialog_layout)
             detail_dialog.exec_()
+
     
     # [Func] goBack
     # [DESC] 뒤로 가기 버튼 클릭 이벤트 핸들러
