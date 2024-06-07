@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Update_System_Security">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Update_System_Security.xml</PluginName>
+    <TargetOS>Linux</TargetOS>
+    <Result_Type>action</Result_Type>
+    <Info>시스템 보안 업데이트</Info>
+    <Description>시스템 보안 업데이트를 진행</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Update_System_Secuirty</CommandName>
+            <CommandType>Bash</CommandType>
+            <CommandString>sudo sh -c 'unattended-upgrade'</CommandString>
+        </Command>
+    </Commands>
+</Plugin>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Change_Administrator_Account_Name">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Change_Administrator_Account_Name.xml</PluginName>
+    <TargetOS>Windows</TargetOS>
+    <Result_Type>action</Result_Type>
+    <Info>Administrator 계정 이름 변경</Info>
+    <Description>Administrator 계정 이름을 유추하기 어려운 계정 이름으로 변경</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Change_Administrator_Account_Name</CommandName>
+            <CommandType>Powershell</CommandType>
+            <CommandString>powershell.exe -Command "$NewAdminName = (Get-LocalUser | Where-Object {$_.SID -like \'S-1-5-21-*-500\'}).Name; if ($NewAdminName -eq \'Administrator\') {$TokenSet = @{U = [Char[]]\'ABCDEFGHIJKLMNOPQRSTUVWXYZ\'; L = [Char[]]\'abcdefghijklmnopqrstuvwxyz\'; N = [Char[]]\'0123456789\'};$StringSet = (Get-Random -Count 5 -InputObject $TokenSet.U) + (Get-Random -Count 5 -InputObject $TokenSet.L) + (Get-Random -Count 5 -InputObject $TokenSet.N);$pwd = -join (Get-Random -Count 8 -InputObject $StringSet);Rename-LocalUser -Name \'Administrator\' -NewName $pwd;$UpdatedAdminName = (Get-LocalUser | Where-Object {$_.SID -like \'S-1-5-21-*-500\'}).Name;if ($UpdatedAdminName -ne \'Administrator\') {Write-Output \'True\'} else {Write-Output \'False\'}} else {Write-Output \'True\'}"</CommandString>
+        </Command>
+    </Commands>
+</Plugin>

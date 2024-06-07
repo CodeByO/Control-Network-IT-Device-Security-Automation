@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<Plugin name="Remote_Event_Log_Access_Block">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>remote-event-log-access-block.xml</PluginName>
+    <TargetOS>Windows</TargetOS>
+    <Result_Type>action</Result_Type>
+    <Info>원격에서 이벤트 로그파일 접근 차단</Info>
+    <Description>원격에서 로그 파일을 접근하는 것을 차단하여 로그 파일의 훼손 및 변조를
+차단하기 위함</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Remote_Event_Log_Access_Block</CommandName>
+            <CommandType>Powershell</CommandType>
+            <CommandString>powershell.exe -Command "$ConfigResult = $null; $LogFilesResult = $null; & {(Get-Acl \\"$env:systemroot\\system32\\config\\").Access | Where-Object { $_.IdentityReference -eq \\"Everyone\\" } | ForEach-Object {$acl = Get-Acl \\"$env:systemroot\\system32\\config\\";$acl.RemoveAccessRule($_);Set-Acl -Path \\"$env:systemroot\\system32\\config\\" -AclObject $acl}};$ConfigOutput = (Get-Acl \\"$env:systemroot\\system32\\config\\").Access | Format-Table -AutoSize | Out-String;if ($ConfigOutput -like \'*Everyone*\') {$ConfigResult = \'False\'} else {$ConfigResult = \'True\'};& {(Get-Acl \\"$env:systemroot\\system32\\LogFiles\\").Access | Where-Object { $_.IdentityReference -eq \\"Everyone\\" } | ForEach-Object {$acl = Get-Acl \\"$env:systemroot\\system32\\LogFiles\\";$acl.RemoveAccessRule($_);Set-Acl -Path \\"$env:systemroot\\system32\\LogFiles\\" -AclObject $acl}};$LogFilesOutput = (Get-Acl \\"$env:systemroot\\system32\\LogFiles\\").Access | Format-Table -AutoSize | Out-String;if ($LogFilesOutput -like \'*Everyone*\') {$LogFilesResult = \'False\'} else {$LogFilesResult = \'True\'};if ($ConfigResult -eq \'True\' -and $LogFilesResult -eq \'True\') {Write-Output \'True\'} else {Write-Output \'False\'}"</CommandString>
+        </Command>
+    </Commands>
+</Plugin>

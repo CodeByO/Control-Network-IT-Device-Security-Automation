@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="RPC_Service_Check">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>RPC_Service_Check.xml</PluginName>
+    <TargetOS>Linux</TargetOS>
+    <Result_Type>info</Result_Type>
+    <Info>불필요한 RPC 서비스가 활성화 되어있는 경우를 확인</Info>
+    <Description>일반적으로 사용하지 않는 RPC 서비스들을 inetd.conf 파일에서 주석 처리한 후 inetd 재구동</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>RPC_Service_Check</CommandName>
+            <CommandType>Bash</CommandType>
+            <CommandString>sed -i '/rpc.cmsd\/2-4 dgram rpc\/udp wait root \/usr\/dt\/bin\/rpc.cmsd rpc.cmsd/s/^/#/' /etc/inetd.conf && kill -HUP $(ps -ef | grep 'inetd' | awk '{print $2}')</CommandString>
+        </Command>
+    </Commands>
+</Plugin>

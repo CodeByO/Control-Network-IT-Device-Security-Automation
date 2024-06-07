@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Change_Account_Lockout_Threshold">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Change_Account_Lockout_Threshold.xml</PluginName>
+    <TargetOS>Windows</TargetOS>
+    <Result_Type>action</Result_Type>
+    <Info>계정 잠금 임계값 변경</Info>
+    <Description>계정 잠금 임계값을 5로 설정</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Change_Account_Lockout_Threshold</CommandName>
+            <CommandType>Powershell</CommandType>
+            <CommandString>powershell.exe -Command "net accounts /lockoutthreshold:5; $TempFile = New-TemporaryFile;secedit /export /cfg $TempFile /areas SECURITYPOLICY;$Content = Get-Content $TempFile;Remove-Item $TempFile;$Threshold = ($Content | Select-String "LockoutBadCount").ToString().Split(\'=\')[-1].Trim();if ($Threshold -eq 5) {Write-Output \'True\'} else {Write-Output \'False\'}"</CommandString>
+        </Command>
+    </Commands>
+</Plugin>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Windows_Verify_mode">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>windows-verify-mode.xml</PluginName>
+    <TargetOS>Windows</TargetOS>
+    <Result_Type>action</Result_Type>
+    <Info>DB 로그인 시 Windows 인증 모드 적절성 점검</Info>
+    <Description>적절한 Windows 인증 모드를 적용하여 적합한 복잡성 수준을 유지하기 위함</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Windows_Verify_Mode</CommandName>
+            <CommandType>Powershell</CommandType>
+            <CommandString>powershell.exe -Command " [System.Reflection.Assembly]::LoadWithPartialName(\'Microsoft.SqlServer.SMO\') | Out-Null; $instanceName = (Get-ItemProperty \'HKLM:\\SOFTWARE\\Microsoft\\Microsoft SQL Server\').InstalledInstances | Select-Object -First 1; $serverName = $env:COMPUTERNAME + \'\\\' + $instanceName; $server = New-Object Microsoft.SqlServer.Management.Smo.Server $serverName; $initialLoginMode = $server.Settings.LoginMode; $server.Settings.LoginMode = [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated; $server.Alter(); $updatedLoginMode = $server.Settings.LoginMode; if ($updatedLoginMode -eq [Microsoft.SqlServer.Management.Smo.ServerLoginMode]::Integrated) { Write-Output \'True\' } else { Write-Output \'False\' }"</CommandString>
+        </Command>
+    </Commands>
+</Plugin>

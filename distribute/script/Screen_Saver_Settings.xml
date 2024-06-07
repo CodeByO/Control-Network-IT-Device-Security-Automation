@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Screen_Saver_Settings">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Screen_Saver_Settings.xml</PluginName>
+    <TargetOS>Windows</TargetOS>
+    <Result_Type>action</Result_Type>
+    <Info>화면보호기 설정</Info>
+    <Description>화면보호기 설정을 "다시 시작할 때 로그인 화면 표시" 체크 및 "대기 시간"을 10분으로 설정</Description>
+    <Commands>
+	<CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Check_Unnecessary_User_Accounts</CommandName>
+            <CommandType>Powershell</CommandType>
+            <CommandString>powershell.exe -Command "Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name ScreenSaverIsSecure -Value 1; Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name ScreenSaveTimeOut -Value 600"</CommandString>
+        </Command>
+    </Commands>
+</Plugin>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Change_services_file_permission">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Change_services_file_permission.xml</PluginName>
+    <TargetOS>Linux</TargetOS>
+    <Result_Type>info</Result_Type>
+    <Info>/etc/services 파일 소유자 및 권한 설정</Info>
+    <Description>/etc/services 파일의 소유자를 root로, 권한을 644로 설정</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Change_services_file_permission</CommandName>
+            <CommandType>Bash</CommandType>
+            <CommandString>chown root /etc/services && chmod 644 /etc/services</CommandString>
+        </Command>
+    </Commands>
+</Plugin>

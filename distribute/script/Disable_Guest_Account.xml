@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Plugin name="Disable_Guest_Account">
+    <PluginVersion>1</PluginVersion>
+    <PluginName>Disable_Guest_Account.xml</PluginName>
+    <TargetOS>Windows</TargetOS>
+    <Result_Type>action</Result_Type>
+    <Info>Guest 계정 사용 안함 설정</Info>
+    <Description>Guest 계정을 비활성화하여 사용하지 않도록 설정</Description>
+    <Commands>
+        <CommandCount>1</CommandCount>
+        <Command>
+            <CommandName>Disable_Guest_Account</CommandName>
+            <CommandType>Powershell</CommandType>
+            <CommandString>powershell.exe -Command "Disable-LocalUser -Name "Guest"; if ((Get-LocalUser -Name "Guest").Enabled) { Write-Output "False" } else { Write-Output "True" }"</CommandString>
+        </Command>
+    </Commands>
+</Plugin>
